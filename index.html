@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />  
     <title>Aplikasi Input Invoice - Firman Grup</title>  
     <style>  
-        /* (Semua CSS Anda tetap sama) */  
+        /* --- CSS asli Anda, tidak saya ubah sama sekali --- */  
         @font-face {  
             font-family: 'CustomFont';  
             src: url('/mnt/data/file-ngwyeoEN29l1M3O1QpdxCwkj');  
@@ -38,42 +38,52 @@
             padding-bottom: 5px;  
         }  
         /* ... semua CSS lain tetap sama ... */  
-        
-        #loginContainer {  
-            max-width: 400px;   
-            margin: 100px auto;   
-            background: white;   
-            padding: 30px;   
-            border-radius: 8px;   
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);  
+
+        /* ------- Tambahan style untuk modal login ------- */  
+        #loginModal {  
+            position: fixed;  
+            top: 0; left: 0; right:0; bottom:0;  
+            background: rgba(0,0,0,0.5);  
+            display: flex;  
+            align-items: center;  
+            justify-content: center;  
+            z-index: 9999;  
+        }  
+        #loginModalContent {  
+            background: white;  
+            padding: 30px;  
+            border-radius: 8px;  
+            width: 320px;  
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);  
             text-align: center;  
         }  
-        #loginContainer input {  
+        #loginModalContent input {  
             width: 100%;  
-            padding: 8px;  
+            padding: 10px;  
             margin: 8px 0;  
-            font-size: 14px;  
+            font-size: 16px;  
             border-radius: 4px;  
             border: 1px solid #ccc;  
             box-sizing: border-box;  
         }  
-        #loginContainer button {  
+        #loginModalContent button {  
             width: 100%;  
             padding: 10px;  
+            margin-top: 15px;  
+            font-size: 16px;  
             background:#007bff;  
             color: white;  
-            font-size: 16px;  
-            border:none;  
-            border-radius:4px;  
-            cursor:pointer;  
+            border: none;  
+            border-radius: 4px;  
+            cursor: pointer;  
         }  
-        #loginContainer button:hover {  
+        #loginModalContent button:hover {  
             background:#0056b3;  
         }  
-        #errorMessage {  
+        #loginError {  
             color: red;  
+            min-height: 20px;  
             margin-top: 10px;  
-            min-height: 18px;  
         }  
         #logoutBtn {  
             float: right;  
@@ -85,6 +95,7 @@
             font-size: 14px;  
             border-radius: 4px;  
             cursor: pointer;  
+            display: none; /* sembunyi dulu */  
         }  
         #logoutBtn:hover {  
             background: #a71d2a;  
@@ -107,38 +118,35 @@
           measurementId: "G-2ZGYXQDLW9"  
         };  
 
-        // Initialize Firebase  
         const app = initializeApp(firebaseConfig);  
         const auth = getAuth(app);  
         const db = getFirestore(app);  
 
-        // Expose globally for other functions  
         window.auth = auth;  
         window.db = db;  
 
-        // After DOM loaded  
         window.addEventListener('DOMContentLoaded', () => {  
-            const loginContainer = document.getElementById('loginContainer');  
-            const appContainer = document.getElementById('appContainer');  
+            const loginModal = document.getElementById('loginModal');  
             const loginForm = document.getElementById('loginForm');  
-            const errorMessage = document.getElementById('errorMessage');  
+            const loginError = document.getElementById('loginError');  
             const logoutBtn = document.getElementById('logoutBtn');  
 
-            // Listen auth state and toggle UI  
+            // Cek auth state  
             onAuthStateChanged(auth, (user) => {  
                 if (user) {  
-                    loginContainer.style.display = 'none';  
-                    appContainer.style.display = 'block';  
+                    // Login sukses, sembunyikan modal login dan munculkan logout button  
+                    loginModal.style.display = 'none';  
+                    logoutBtn.style.display = 'inline-block';  
                 } else {  
-                    loginContainer.style.display = 'block';  
-                    appContainer.style.display = 'none';  
+                    // Belum login, tampilkan modal login  
+                    loginModal.style.display = 'flex';  
+                    logoutBtn.style.display = 'none';  
                 }  
             });  
 
-            // Login form submit  
             loginForm.addEventListener('submit', async (e) => {  
                 e.preventDefault();  
-                errorMessage.textContent = '';  
+                loginError.textContent = '';  
 
                 const email = loginForm.email.value.trim();  
                 const password = loginForm.password.value;  
@@ -147,26 +155,23 @@
                     await signInWithEmailAndPassword(auth, email, password);  
                     loginForm.reset();  
                 } catch (error) {  
-                    errorMessage.textContent = 'Login gagal: ' + error.message;  
+                    loginError.textContent = 'Login gagal: ' + error.message;  
                 }  
             });  
 
-            // Logout button  
             logoutBtn.addEventListener('click', () => {  
                 signOut(auth);  
             });  
 
-            // Override Simpan invoice button to save to Firestore with user id  
+            // Override save invoice button agar simpan ke Firestore  
             const saveBtn = document.getElementById('saveInvoice');  
-
             saveBtn.addEventListener('click', async () => {  
                 const user = auth.currentUser;  
                 if (!user) {  
-                    alert("Anda harus login terlebih dahulu!");  
+                    alert('Anda harus login terlebih dahulu!');  
                     return;  
                 }  
 
-                // Validasi invoice  
                 const clientName = document.getElementById('clientName').value.trim();  
                 const itemList = document.getElementById('itemList');  
 
@@ -179,7 +184,6 @@
                     return;  
                 }  
 
-                // Prepare data  
                 const invoiceData = {  
                     userId: user.uid,  
                     company: {  
@@ -201,7 +205,7 @@
                     createdAt: serverTimestamp()  
                 };  
 
-                for (let i = 0; i < itemList.rows.length; i++) {  
+                for(let i=0; i < itemList.rows.length; i++) {  
                     const row = itemList.rows[i];  
                     invoiceData.items.push({  
                         name: row.dataset.name,  
@@ -211,11 +215,11 @@
                     });  
                 }  
 
-                try {  
+                try{  
                     await addDoc(collection(db, "invoices"), invoiceData);  
                     alert("Invoice berhasil disimpan online!");  
-                    window.resetForm(); // Panggil reset original setelah simpan  
-                } catch (err) {  
+                    window.resetForm(); // reset form Anda  
+                } catch(err) {  
                     alert("Gagal menyimpan invoice: " + err.message);  
                 }  
             });  
@@ -223,468 +227,387 @@
     </script>  
 </head>  
 <body>  
-
-    <!-- Halaman Login -->  
-    <div id="loginContainer">  
-        <h2>Login ke Aplikasi</h2>  
-        <form id="loginForm">  
-            <input type="email" name="email" id="email" placeholder="Email" required />  
-            <input type="password" name="password" id="password" placeholder="Password" required />  
-            <button type="submit">Login</button>  
-            <div id="errorMessage"></div>  
-        </form>  
+    <!-- Modal Login -->  
+    <div id="loginModal">  
+        <div id="loginModalContent">  
+            <h2>Login ke Aplikasi</h2>  
+            <form id="loginForm">  
+                <input type="email" id="email" name="email" placeholder="Email" required />  
+                <input type="password" id="password" name="password" placeholder="Password" required />  
+                <button type="submit">Login</button>  
+            </form>  
+            <div id="loginError"></div>  
+        </div>  
     </div>  
 
-    <!-- Main aplikasi invoice, sembunyikan dulu -->  
-    <div id="appContainer" style="display:none;">  
-        <button id="logoutBtn">Logout</button>  
+    <button id="logoutBtn">Logout</button>  
 
-        <div class="container">  
+    <div class="container">  
+        <!-- Semua isi form invoice Anda tetap sama -->  
+        <div class="no-print">  
+            <h1>Aplikasi Input Invoice</h1>  
+        </div>  
+        
+        <div class="print-header" style="display: none;">  
+            <h1>INVOICE</h1>  
+            <div class="print-company-info">  
+                <p>Firman Grup</p>  
+                <p>Kota Metro</p>  
+                <p>Telepon: 082379821111</p>  
+                <p>No. Invoice: <span id="printInvoiceNumber"></span></p>  
+                <p>Tanggal: <span id="printInvoiceDate"></span></p>  
+            </div>  
+        </div>  
+        
+        <form id="invoiceForm">  
             <div class="no-print">  
-                <h1>Aplikasi Input Invoice</h1>  
-            </div>  
-            
-            <div class="print-header" style="display: none;">  
-                <h1>INVOICE</h1>  
-                <div class="print-company-info">  
-                    <p>Firman Grup</p>  
-                    <p>Kota Metro</p>  
-                    <p>Telepon: 082379821111</p>  
-                    <p>No. Invoice: <span id="printInvoiceNumber"></span></p>  
-                    <p>Tanggal: <span id="printInvoiceDate"></span></p>  
-                </div>  
-            </div>  
-            
-            <form id="invoiceForm">  
-                <div class="no-print">  
-                    <div class="form-grid">  
-                        <div class="form-section">  
-                            <h2>Informasi Perusahaan</h2>  
-                            <div class="form-group">  
-                                <label for="companyName">Nama Perusahaan</label>  
-                                <input type="text" id="companyName" value="Firman Grup" required />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="companyAddress">Alamat</label>  
-                                <input type="text" id="companyAddress" value="Kota Metro" required />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="companyPhone">Telepon</label>  
-                                <input type="tel" id="companyPhone" value="082379821111" required />  
-                            </div>  
+                <div class="form-grid">  
+                    <div class="form-section">  
+                        <h2>Informasi Perusahaan</h2>  
+                        <div class="form-group">  
+                            <label for="companyName">Nama Perusahaan</label>  
+                            <input type="text" id="companyName" value="Firman Grup" required />  
                         </div>  
-                        
-                        <div class="form-section">  
-                            <h2>Informasi Invoice</h2>  
-                            <div class="form-group">  
-                                <label for="invoiceNumber">Nomor Invoice</label>  
-                                <input type="text" id="invoiceNumber" placeholder="Nomor Invoice" required />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="invoiceDate">Tanggal</label>  
-                                <input type="text" id="invoiceDate" required readonly />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="currency">Mata Uang</label>  
-                                <select id="currency">  
-                                    <option value="IDR">IDR</option>  
-                                    <option value="USD">USD</option>  
-                                    <option value="EUR">EUR</option>  
-                                </select>  
-                            </div>  
+                        <div class="form-group">  
+                            <label for="companyAddress">Alamat</label>  
+                            <input type="text" id="companyAddress" value="Kota Metro" required />  
+                        </div>  
+                        <div class="form-group">  
+                            <label for="companyPhone">Telepon</label>  
+                            <input type="tel" id="companyPhone" value="082379821111" required />  
                         </div>  
                     </div>  
                     
                     <div class="form-section">  
-                        <h2>Informasi Klien</h2>  
-                        <div class="form-grid">  
-                            <div class="form-group">  
-                                <label for="clientName">Nama Klien</label>  
-                                <input type="text" id="clientName" placeholder="Nama Klien" required />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="clientPhone">Telepon Klien</label>  
-                                <input type="tel" id="clientPhone" placeholder="Nomor Telepon Klien" required />  
-                            </div>  
+                        <h2>Informasi Invoice</h2>  
+                        <div class="form-group">  
+                            <label for="invoiceNumber">Nomor Invoice</label>  
+                            <input type="text" id="invoiceNumber" placeholder="Nomor Invoice" required />  
                         </div>  
                         <div class="form-group">  
-                            <label for="clientAddress">Alamat Klien</label>  
-                            <input type="text" id="clientAddress" placeholder="Alamat Klien" required />  
+                            <label for="invoiceDate">Tanggal</label>  
+                            <input type="text" id="invoiceDate" required readonly />  
                         </div>  
-                    </div>  
-        
-                    <div class="form-section item-form">  
-                        <h2>Tambah Item</h2>  
-                        <div class="item-form-grid">  
-                            <div class="form-group">  
-                                <label for="itemName">Nama Barang</label>  
-                                <input type="text" id="itemName" placeholder="Nama Barang" required />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="itemQuantity">Jumlah</label>  
-                                <input type="number" id="itemQuantity" placeholder="Jumlah" required min="1" />  
-                            </div>  
-                            <div class="form-group">  
-                                <label for="itemPrice">Harga</label>  
-                                <input type="text" id="itemPrice" placeholder="Harga" required />  
-                            </div>  
-                            <div>  
-                                <button type="button" id="addItem">Tambah ke Daftar</button>  
-                                <button type="button" id="updateItem" style="display:none; background-color: #ffc107; color: black;">Update Item</button>  
-                                <input type="hidden" id="editItemIndex" value="" />  
-                            </div>  
+                        <div class="form-group">  
+                            <label for="currency">Mata Uang</label>  
+                            <select id="currency">  
+                                <option value="IDR">IDR</option>  
+                                <option value="USD">USD</option>  
+                                <option value="EUR">EUR</option>  
+                            </select>  
                         </div>  
                     </div>  
                 </div>  
-        
-                <h2>Daftar Item</h2>  
-                <div style="overflow-x: auto;">  
-                    <table>  
-                        <thead>  
-                            <tr>  
-                                <th>No</th>  
-                                <th>Nama Barang</th>  
-                                <th>Jumlah</th>  
-                                <th>Harga</th>  
-                                <th>Subtotal</th>  
-                                <th class="no-print">Aksi</th>  
-                            </tr>  
-                        </thead>  
-                        <tbody id="itemList">  
-                            <!-- Daftar item akan dimasukkan di sini -->  
-                        </tbody>  
-                    </table>  
-                </div>  
-        
-                <div class="total">Total: <span id="totalAmount">0</span></div>  
                 
-                <h2>Catatan</h2>  
-                <textarea id="notes" placeholder="Catatan tambahan..."></textarea>  
-        
-                <div class="footer">  
-                    <div class="signature">  
-                        <p>Diterima oleh,</p>  
-                        <br /><br />  
-                        <p>________________</p>  
-                        <p>Nama Jelas & Cap</p>  
+                <div class="form-section">  
+                    <h2>Informasi Klien</h2>  
+                    <div class="form-grid">  
+                        <div class="form-group">  
+                            <label for="clientName">Nama Klien</label>  
+                            <input type="text" id="clientName" placeholder="Nama Klien" required />  
+                        </div>  
+                        <div class="form-group">  
+                            <label for="clientPhone">Telepon Klien</label>  
+                            <input type="tel" id="clientPhone" placeholder="Nomor Telepon Klien" required />  
+                        </div>  
                     </div>  
-                    <div class="signature">  
-                        <p>Hormat Kami,</p>  
-                        <br /><br />  
-                        <p>________________</p>  
-                        <p>Manager Keuangan</p>  
+                    <div class="form-group">  
+                        <label for="clientAddress">Alamat Klien</label>  
+                        <input type="text" id="clientAddress" placeholder="Alamat Klien" required />  
                     </div>  
                 </div>  
-        
-                <div class="actions no-print">  
-                    <button type="button" id="resetForm">Reset</button>  
-                    <button type="button" id="saveInvoice">Simpan</button>  
-                    <button type="button" id="printInvoice">Cetak Invoice</button>  
+
+                <div class="form-section item-form">  
+                    <h2>Tambah Item</h2>  
+                    <div class="item-form-grid">  
+                        <div class="form-group">  
+                            <label for="itemName">Nama Barang</label>  
+                            <input type="text" id="itemName" placeholder="Nama Barang" required />  
+                        </div>  
+                        <div class="form-group">  
+                            <label for="itemQuantity">Jumlah</label>  
+                            <input type="number" id="itemQuantity" placeholder="Jumlah" required min="1" />  
+                        </div>  
+                        <div class="form-group">  
+                            <label for="itemPrice">Harga</label>  
+                            <input type="text" id="itemPrice" placeholder="Harga" required />  
+                        </div>  
+                        <div>  
+                            <button type="button" id="addItem">Tambah ke Daftar</button>  
+                            <button type="button" id="updateItem" style="display:none; background-color: #ffc107; color: black;">Update Item</button>  
+                            <input type="hidden" id="editItemIndex" value="" />  
+                        </div>  
+                    </div>  
                 </div>  
-            </form>  
-        </div>  
+            </div>  
+
+            <h2>Daftar Item</h2>  
+            <div style="overflow-x: auto;">  
+                <table>  
+                    <thead>  
+                        <tr>  
+                            <th>No</th>  
+                            <th>Nama Barang</th>  
+                            <th>Jumlah</th>  
+                            <th>Harga</th>  
+                            <th>Subtotal</th>  
+                            <th class="no-print">Aksi</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody id="itemList">  
+                        <!-- Daftar item akan dimasukkan di sini -->  
+                    </tbody>  
+                </table>  
+            </div>  
+
+            <div class="total">Total: <span id="totalAmount">0</span></div>  
+            
+            <h2>Catatan</h2>  
+            <textarea id="notes" placeholder="Catatan tambahan..."></textarea>  
+
+            <div class="footer">  
+                <div class="signature">  
+                    <p>Diterima oleh,</p>  
+                    <br /><br />  
+                    <p>________________</p>  
+                    <p>Nama Jelas & Cap</p>  
+                </div>  
+                <div class="signature">  
+                    <p>Hormat Kami,</p>  
+                    <br /><br />  
+                    <p>________________</p>  
+                    <p>Manager Keuangan</p>  
+                </div>  
+            </div>  
+
+            <div class="actions no-print">  
+                <button type="button" id="resetForm">Reset</button>  
+                <button type="button" id="saveInvoice">Simpan</button>  
+                <button type="button" id="printInvoice">Cetak Invoice</button>  
+            </div>  
+        </form>  
     </div>  
 
-<script>  
-    // ==== Semua function dan logic script Anda tetap sama ====  
+    <script>  
+        // ==== Semua JavaScript Anda sama persis ====  
 
-    // Set tanggal otomatis dalam format dd/mm/yyyy  
-    function setCurrentDate() {  
-        const today = new Date();  
-        const day = String(today.getDate()).padStart(2, '0');  
-        const month = String(today.getMonth() + 1).padStart(2, '0');  
-        const year = today.getFullYear();  
-        
-        document.getElementById('invoiceDate').value = `${day}/${month}/${year}`;  
-    }  
-    
-    // Generate nomor invoice  
-    function generateInvoiceNumber() {  
-        const today = new Date();  
-        const year = today.getFullYear();  
-        const month = String(today.getMonth() + 1).padStart(2, '0');  
-        const day = String(today.getDate()).padStart(2, '0');  
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');  
-        
-        return `INV-${year}${month}${day}-${random}`;  
-    }  
-    
-    // Format angka dengan pemisah ribuan  
-    function formatNumber(num) {  
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");  
-    }  
-    
-    // Unformat angka dari string dengan pemisah ribuan  
-    function unformatNumber(str) {  
-        return parseFloat(str.replace(/\./g, '').replace(',', '.'));  
-    }  
-    
-    // Event listener untuk format harga dengan pemisah ribuan  
-    document.getElementById('itemPrice').addEventListener('input', function(e) {  
-        // Hapus karakter non-digit kecuali titik  
-        let value = this.value.replace(/[^\d]/g, '');  
-        
-        // Konversi ke angka  
-        let number = parseInt(value);  
-        
-        // Format dengan pemisah ribuan jika angka valid  
-        if (!isNaN(number)) {  
-            this.value = formatNumber(number);  
-        } else {  
-            this.value = '';  
+        function setCurrentDate() {  
+            const today = new Date();  
+            const day = String(today.getDate()).padStart(2, '0');  
+            const month = String(today.getMonth() + 1).padStart(2, '0');  
+            const year = today.getFullYear();  
+            
+            document.getElementById('invoiceDate').value = `${day}/${month}/${year}`;  
         }  
-    });  
-    
-    // Reset form  
-    window.resetForm = function() {  
-        // Kembali ke nilai default untuk informasi perusahaan  
-        document.getElementById('companyName').value = 'Firman Grup';  
-        document.getElementById('companyAddress').value = 'Kota Metro';  
-        document.getElementById('companyPhone').value = '082379821111';  
         
-        // Reset informasi invoice  
-        document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
-        setCurrentDate();  
-        
-        // Reset informasi klien  
-        document.getElementById('clientName').value = '';  
-        document.getElementById('clientAddress').value = '';  
-        document.getElementById('clientPhone').value = '';  
-        
-        // Reset form item  
-        document.getElementById('itemName').value = '';  
-        document.getElementById('itemQuantity').value = '';  
-        document.getElementById('itemPrice').value = '';  
-        
-        // Reset daftar item  
-        document.getElementById('itemList').innerHTML = '';  
-        
-        // Reset total  
-        window.totalAmount = 0;  
-        document.getElementById('totalAmount').textContent = '0';  
-        
-        // Reset catatan  
-        document.getElementById('notes').value = '';  
-        
-        // Reset item counter  
-        window.itemCounter = 1;  
-        
-        // Reset mode edit  
-        exitEditMode();  
-    }  
-    
-    // Inisialisasi saat halaman dimuat  
-    window.onload = function() {  
-        setCurrentDate();  
-        document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
-    };  
-    
-    // Fungsi untuk menambahkan item ke daftar  
-    window.itemCounter = 1;  
-    window.totalAmount = 0;  
-    
-    function addItemToList() {  
-        const itemName = document.getElementById('itemName').value;  
-        const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
-        const itemPriceStr = document.getElementById('itemPrice').value;  
-        const itemPrice = unformatNumber(itemPriceStr);  
-        
-        if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
-            const subtotal = itemQuantity * itemPrice;  
-            const tableRow = document.createElement('tr');  
-            tableRow.dataset.name = itemName;  
-            tableRow.dataset.quantity = itemQuantity;  
-            tableRow.dataset.price = itemPrice;  
+        function generateInvoiceNumber() {  
+            const today = new Date();  
+            const year = today.getFullYear();  
+            const month = String(today.getMonth() + 1).padStart(2, '0');  
+            const day = String(today.getDate()).padStart(2, '0');  
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');  
             
-            tableRow.innerHTML = `  
-                <td>${window.itemCounter}</td>  
-                <td>${itemName}</td>  
-                <td>${itemQuantity}</td>  
-                <td class="right">${formatNumber(itemPrice)}</td>  
-                <td class="right">${formatNumber(subtotal)}</td>  
-                <td class="no-print">  
-                    <button type="button" class="editBtn">Edit</button>  
-                    <button type="button" class="deleteBtn">Hapus</button>  
-                </td>  
-            `;  
-            
-            document.getElementById('itemList').appendChild(tableRow);  
-            
-            // Reset form item  
+            return `INV-${year}${month}${day}-${random}`;  
+        }  
+
+        function formatNumber(num) {  
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");  
+        }  
+
+        function unformatNumber(str) {  
+            return parseFloat(str.replace(/\./g, '').replace(',', '.'));  
+        }  
+
+        document.getElementById('itemPrice').addEventListener('input', function(e) {  
+            let value = this.value.replace(/[^\d]/g, '');  
+            let number = parseInt(value);  
+            if (!isNaN(number)) {  
+                this.value = formatNumber(number);  
+            } else {  
+                this.value = '';  
+            }  
+        });  
+
+        window.resetForm = function() {  
+            document.getElementById('companyName').value = 'Firman Grup';  
+            document.getElementById('companyAddress').value = 'Kota Metro';  
+            document.getElementById('companyPhone').value = '082379821111';  
+            document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
+            setCurrentDate();  
+            document.getElementById('clientName').value = '';  
+            document.getElementById('clientAddress').value = '';  
+            document.getElementById('clientPhone').value = '';  
             document.getElementById('itemName').value = '';  
             document.getElementById('itemQuantity').value = '';  
             document.getElementById('itemPrice').value = '';  
-            
-            // Update counter dan total  
-            window.itemCounter++;  
-            window.totalAmount += subtotal;  
-            document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
-            
-            // Tambahkan event listener untuk tombol  
-            addButtonListeners(tableRow);  
-            
-            return true;  
-        } else {  
-            alert('Silakan isi semua data item dengan benar!');  
-            return false;  
+            document.getElementById('itemList').innerHTML = '';  
+            window.totalAmount = 0;  
+            document.getElementById('totalAmount').textContent = '0';  
+            document.getElementById('notes').value = '';  
+            window.itemCounter = 1;  
+            exitEditMode();  
         }  
-    }  
-    
-    function addButtonListeners(tableRow) {  
-        // Event listener untuk tombol hapus  
-        const deleteButton = tableRow.querySelector('.deleteBtn');  
-        deleteButton.addEventListener('click', function() {  
-            const row = this.closest('tr');  
-            const rowSubtotal = unformatNumber(row.cells[4].textContent);  
+
+        window.onload = function() {  
+            setCurrentDate();  
+            document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
+        };  
+
+        window.itemCounter = 1;  
+        window.totalAmount = 0;  
+
+        function addItemToList() {  
+            const itemName = document.getElementById('itemName').value;  
+            const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
+            const itemPriceStr = document.getElementById('itemPrice').value;  
+            const itemPrice = unformatNumber(itemPriceStr);  
             
-            window.totalAmount -= rowSubtotal;  
-            document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
-            
-            row.remove();  
-            
-            // Re-number rows  
-            const rows = document.getElementById('itemList').rows;  
-            for (let i = 0; i < rows.length; i++) {  
-                rows[i].cells[0].textContent = i + 1;  
-            }  
-            
-            window.itemCounter = rows.length + 1;  
-            
-            // Keluar dari mode edit jika sedang edit item yang dihapus  
-            if (document.getElementById('editItemIndex').value) {  
-                exitEditMode();  
-            }  
-        });  
-        
-        // Event listener untuk tombol edit  
-        const editButton = tableRow.querySelector('.editBtn');  
-        editButton.addEventListener('click', function() {  
-            const row = this.closest('tr');  
-            const rowIndex = row.rowIndex;  
-            
-            // Isi form dengan data item  
-            document.getElementById('itemName').value = row.dataset.name;  
-            document.getElementById('itemQuantity').value = row.dataset.quantity;  
-            document.getElementById('itemPrice').value = formatNumber(row.dataset.price);  
-            
-            // Simpan index row yang sedang diedit  
-            document.getElementById('editItemIndex').value = rowIndex;  
-            
-            // Tampilkan tombol update, sembunyikan tombol tambah  
-            document.getElementById('addItem').style.display = 'none';  
-            document.getElementById('updateItem').style.display = 'inline-block';  
-            
-            // Scroll ke form  
-            document.getElementById('itemName').scrollIntoView({behavior: 'smooth'});  
-        });  
-    }  
-    
-    function exitEditMode() {  
-        document.getElementById('editItemIndex').value = '';  
-        document.getElementById('addItem').style.display = 'inline-block';  
-        document.getElementById('updateItem').style.display = 'none';  
-    }  
-    
-    // Event listener untuk tombol tambah item  
-    document.getElementById('addItem').addEventListener('click', function() {  
-        addItemToList();  
-    });  
-    
-    // Event listener untuk tombol update item  
-    document.getElementById('updateItem').addEventListener('click', function() {  
-        const rowIndex = document.getElementById('editItemIndex').value;  
-        if (!rowIndex) return;  
-        
-        const itemName = document.getElementById('itemName').value;  
-        const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
-        const itemPriceStr = document.getElementById('itemPrice').value;  
-        const itemPrice = unformatNumber(itemPriceStr);  
-        
-        if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
-            const rows = document.getElementById('itemList').rows;  
-            const row = rows[rowIndex - 1]; // -1 karena rowIndex dimulai dari 1, sedangkan array dimulai dari 0  
-            
-            if (row) {  
-                const oldSubtotal = unformatNumber(row.cells[4].textContent);  
-                const newSubtotal = itemQuantity * itemPrice;  
+            if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
+                const subtotal = itemQuantity * itemPrice;  
+                const tableRow = document.createElement('tr');  
+                tableRow.dataset.name = itemName;  
+                tableRow.dataset.quantity = itemQuantity;  
+                tableRow.dataset.price = itemPrice;  
                 
-                window.totalAmount = window.totalAmount - oldSubtotal + newSubtotal;  
-                document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
+                tableRow.innerHTML = `  
+                    <td>${window.itemCounter}</td>  
+                    <td>${itemName}</td>  
+                    <td>${itemQuantity}</td>  
+                    <td class="right">${formatNumber(itemPrice)}</td>  
+                    <td class="right">${formatNumber(subtotal)}</td>  
+                    <td class="no-print">  
+                        <button type="button" class="editBtn">Edit</button>  
+                        <button type="button" class="deleteBtn">Hapus</button>  
+                    </td>  
+                `;  
                 
-                row.dataset.name = itemName;  
-                row.dataset.quantity = itemQuantity;  
-                row.dataset.price = itemPrice;  
-                
-                row.cells[1].textContent = itemName;  
-                row.cells[2].textContent = itemQuantity;  
-                row.cells[3].textContent = formatNumber(itemPrice);  
-                row.cells[4].textContent = formatNumber(newSubtotal);  
+                document.getElementById('itemList').appendChild(tableRow);  
                 
                 document.getElementById('itemName').value = '';  
                 document.getElementById('itemQuantity').value = '';  
                 document.getElementById('itemPrice').value = '';  
                 
-                exitEditMode();  
-            }  
-        } else {  
-            alert('Silakan isi semua data item dengan benar!');  
-        }  
-    });  
-    
-    // Event listener untuk tombol reset  
-    document.getElementById('resetForm').addEventListener('click', function() {  
-        if (confirm('Anda yakin ingin mereset seluruh form?')) {  
-            resetForm();  
-        }  
-    });  
-    
-    // Fungsi untuk cetak invoice  
-    document.getElementById('printInvoice').addEventListener('click', function() {  
-        const clientName = document.getElementById('clientName').value;  
-        if (!clientName) {  
-            alert('Silakan isi informasi klien terlebih dahulu!');  
-            return;  
-        }  
-        if (document.getElementById('itemList').rows.length === 0) {  
-            alert('Silakan tambahkan minimal satu item terlebih dahulu!');  
-            return;  
-        }  
-        document.querySelector('.print-header').style.display = 'block';  
-        document.getElementById('printInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;  
-        document.getElementById('printInvoiceDate').textContent = document.getElementById('invoiceDate').value;  
-        window.print();  
-        setTimeout(function() {  
-            document.querySelector('.print-header').style.display = 'none';  
-        }, 1000);  
-    });  
-    
-    document.getElementById('printInvoice').addEventListener('click', function() {  
-        const notes = document.getElementById('notes');  
-        const notesOriginalHeight = notes.style.height;  
-        if (notes.value.length > 100) {  
-            notes.style.height = '60px';  
-        } else if (notes.value.length > 0) {  
-            notes.style.height = '40px';  
-        } else {  
-            notes.style.height = '20px';  
-        }  
-        setTimeout(function() {  
-            notes.style.height = notesOriginalHeight;  
-        }, 1000);  
-    });  
-    
-    // Enter key pada item form tambah item  
-    document.getElementById('itemPrice').addEventListener('keypress', function(e) {  
-        if (e.key === 'Enter') {  
-            e.preventDefault();  
-            if (document.getElementById('updateItem').style.display === 'inline-block') {  
-                document.getElementById('updateItem').click();  
+                window.itemCounter++;  
+                window.totalAmount += subtotal;  
+                document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
+                
+                addButtonListeners(tableRow);  
+                
+                return true;  
             } else {  
-                document.getElementById('addItem').click();  
+                alert('Silakan isi semua data item dengan benar!');  
+                return false;  
             }  
         }  
-    });  
-</script>  
 
+        function addButtonListeners(tableRow) {  
+            const deleteButton = tableRow.querySelector('.deleteBtn');  
+            deleteButton.addEventListener('click', function() {  
+                const row = this.closest('tr');  
+                const rowSubtotal = unformatNumber(row.cells[4].textContent);  
+                window.totalAmount -= rowSubtotal;  
+                document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
+                row.remove();  
+                const rows = document.getElementById('itemList').rows;  
+                for(let i=0; i<rows.length; i++) {  
+                    rows[i].cells[0].textContent = i+1;  
+                }  
+                window.itemCounter = rows.length +1;  
+                if(document.getElementById('editItemIndex').value) {  
+                    exitEditMode();  
+                }  
+            });  
+            
+            const editButton = tableRow.querySelector('.editBtn');  
+            editButton.addEventListener('click', function() {  
+                const row = this.closest('tr');  
+                const rowIndex = row.rowIndex;  
+                document.getElementById('itemName').value = row.dataset.name;  
+                document.getElementById('itemQuantity').value = row.dataset.quantity;  
+                document.getElementById('itemPrice').value = formatNumber(row.dataset.price);  
+                document.getElementById('editItemIndex').value = rowIndex;  
+                document.getElementById('addItem').style.display = 'none';  
+                document.getElementById('updateItem').style.display = 'inline-block';  
+                document.getElementById('itemName').scrollIntoView({behavior:'smooth'});  
+            });  
+        }  
+
+        function exitEditMode() {  
+            document.getElementById('editItemIndex').value = '';  
+            document.getElementById('addItem').style.display = 'inline-block';  
+            document.getElementById('updateItem').style.display = 'none';  
+        }  
+
+        document.getElementById('addItem').addEventListener('click', () => addItemToList());  
+
+        document.getElementById('updateItem').addEventListener('click', () => {  
+            const rowIndex = document.getElementById('editItemIndex').value;  
+            if(!rowIndex) return;  
+            const itemName = document.getElementById('itemName').value;  
+            const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
+            const itemPriceStr = document.getElementById('itemPrice').value;  
+            const itemPrice = unformatNumber(itemPriceStr);  
+            if(itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
+                const rows = document.getElementById('itemList').rows;  
+                const row = rows[rowIndex-1];  
+                if(row) {  
+                    const oldSubtotal = unformatNumber(row.cells[4].textContent);  
+                    const newSubtotal = itemQuantity * itemPrice;  
+                    window.totalAmount = window.totalAmount - oldSubtotal + newSubtotal;  
+                    document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
+                    row.dataset.name = itemName;  
+                    row.dataset.quantity = itemQuantity;  
+                    row.dataset.price = itemPrice;  
+                    row.cells[1].textContent = itemName;  
+                    row.cells[2].textContent = itemQuantity;  
+                    row.cells[3].textContent = formatNumber(itemPrice);  
+                    row.cells[4].textContent = formatNumber(newSubtotal);  
+                    document.getElementById('itemName').value = '';  
+                    document.getElementById('itemQuantity').value = '';  
+                    document.getElementById('itemPrice').value = '';  
+                    exitEditMode();  
+                }  
+            } else {  
+                alert('Silakan isi semua data item dengan benar!');  
+            }  
+        });  
+
+        document.getElementById('resetForm').addEventListener('click', () => {  
+            if(confirm('Anda yakin ingin mereset seluruh form?')) {  
+                resetForm();  
+            }  
+        });  
+
+        document.getElementById('printInvoice').addEventListener('click', () => {  
+            const clientName = document.getElementById('clientName').value;  
+            if(!clientName) { alert('Silakan isi informasi klien terlebih dahulu!'); return; }  
+            if(document.getElementById('itemList').rows.length === 0) { alert('Silakan tambahkan minimal satu item terlebih dahulu!'); return; }  
+            document.querySelector('.print-header').style.display = 'block';  
+            document.getElementById('printInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;  
+            document.getElementById('printInvoiceDate').textContent = document.getElementById('invoiceDate').value;  
+            window.print();  
+            setTimeout(() => { document.querySelector('.print-header').style.display = 'none'; }, 1000);  
+        });  
+
+        document.getElementById('printInvoice').addEventListener('click', () => {  
+            const notes = document.getElementById('notes');  
+            const notesOriginalHeight = notes.style.height;  
+            if(notes.value.length > 100) { notes.style.height = '60px'; }  
+            else if(notes.value.length > 0) { notes.style.height = '40px'; }  
+            else { notes.style.height = '20px'; }  
+            setTimeout(() => { notes.style.height = notesOriginalHeight; }, 1000);  
+        });  
+
+        document.getElementById('itemPrice').addEventListener('keypress', (e) => {  
+            if(e.key === 'Enter') {  
+                e.preventDefault();  
+                if(document.getElementById('updateItem').style.display === 'inline-block') {  
+                    document.getElementById('updateItem').click();  
+                } else {  
+                    document.getElementById('addItem').click();  
+                }  
+            }  
+        });  
+    </script>  
 </body>  
 </html>
