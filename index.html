@@ -1,613 +1,497 @@
 <!DOCTYPE html>  
 <html lang="id">  
 <head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1" />  
-    <title>Aplikasi Input Invoice - Firman Grup</title>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Undangan Pernikahan Firman & Resti</title>  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">  
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">  
     <style>  
-        /* --- CSS asli Anda, tidak saya ubah sama sekali --- */  
-        @font-face {  
-            font-family: 'CustomFont';  
-            src: url('/mnt/data/file-ngwyeoEN29l1M3O1QpdxCwkj');  
+        :root {  
+            --primary-color: #6a1b9a;  
+            --secondary-color: #9c27b0;  
         }  
         body {  
-            font-family: 'CustomFont', Arial, sans-serif;  
-            background-color: #f5f5f5;  
-            margin: 0;  
-            padding: 20px;  
-            font-size: 14px;  
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));  
+            font-family: 'Arial', sans-serif;  
+            min-height: 100vh;  
+            color: #333;  
         }  
-        .container {  
-            max-width: 800px;  
-            margin: auto;  
-            background: #fff;  
-            padding: 20px;  
-            border-radius: 8px;  
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  
+        .card-custom {  
+            border-radius: 15px;  
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);  
+            background: rgba(255,255,255,0.95);  
         }  
-        h1 {  
-            text-align: center;  
-            margin-bottom: 20px;  
-            font-size: 24px;  
-        }  
-        h2 {  
-            text-align: left;  
-            margin: 15px 0 5px 0;  
-            font-size: 16px;  
-            border-bottom: 1px solid #eee;  
-            padding-bottom: 5px;  
-        }  
-        /* ... semua CSS lain tetap sama ... */  
-
-        /* ------- Tambahan style untuk modal login ------- */  
-        #loginModal {  
-            position: fixed;  
-            top: 0; left: 0; right:0; bottom:0;  
-            background: rgba(0,0,0,0.5);  
-            display: flex;  
-            align-items: center;  
-            justify-content: center;  
-            z-index: 9999;  
-        }  
-        #loginModalContent {  
-            background: white;  
-            padding: 30px;  
-            border-radius: 8px;  
-            width: 320px;  
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);  
-            text-align: center;  
-        }  
-        #loginModalContent input {  
-            width: 100%;  
-            padding: 10px;  
-            margin: 8px 0;  
-            font-size: 16px;  
-            border-radius: 4px;  
-            border: 1px solid #ccc;  
-            box-sizing: border-box;  
-        }  
-        #loginModalContent button {  
-            width: 100%;  
-            padding: 10px;  
-            margin-top: 15px;  
-            font-size: 16px;  
-            background:#007bff;  
+        .btn-custom {  
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));  
             color: white;  
             border: none;  
-            border-radius: 4px;  
-            cursor: pointer;  
+            transition: all 0.3s ease;  
         }  
-        #loginModalContent button:hover {  
-            background:#0056b3;  
-        }  
-        #loginError {  
-            color: red;  
-            min-height: 20px;  
-            margin-top: 10px;  
-        }  
-        #logoutBtn {  
-            float: right;  
-            margin: 10px 20px 0 0;  
-            background: #dc3545;  
-            border: none;  
-            padding: 8px 12px;  
+        .btn-custom:hover {  
+            transform: scale(1.05);  
             color: white;  
-            font-size: 14px;  
-            border-radius: 4px;  
-            cursor: pointer;  
-            display: none; /* sembunyi dulu */  
         }  
-        #logoutBtn:hover {  
-            background: #a71d2a;  
+        .nav-tabs .nav-link {  
+            color: var(--primary-color);  
+        }  
+        .nav-tabs .nav-link.active {  
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;  
+            color: white !important;  
         }  
     </style>  
-
-    <!-- Firebase SDK & Initialization -->  
-    <script type="module">  
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";  
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";  
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";  
-
-        const firebaseConfig = {  
-          apiKey: "AIzaSyCRm31FJaqEbjL_MqMKKiiQRlurYenc4Dc",  
-          authDomain: "project-baru-28a4a.firebaseapp.com",  
-          projectId: "project-baru-28a4a",  
-          storageBucket: "project-baru-28a4a.appspot.com",  
-          messagingSenderId: "1046595689835",  
-          appId: "1:1046595689835:web:5c7eb22e357e36ff11802e",  
-          measurementId: "G-2ZGYXQDLW9"  
-        };  
-
-        const app = initializeApp(firebaseConfig);  
-        const auth = getAuth(app);  
-        const db = getFirestore(app);  
-
-        window.auth = auth;  
-        window.db = db;  
-
-        window.addEventListener('DOMContentLoaded', () => {  
-            const loginModal = document.getElementById('loginModal');  
-            const loginForm = document.getElementById('loginForm');  
-            const loginError = document.getElementById('loginError');  
-            const logoutBtn = document.getElementById('logoutBtn');  
-
-            // Cek auth state  
-            onAuthStateChanged(auth, (user) => {  
-                if (user) {  
-                    // Login sukses, sembunyikan modal login dan munculkan logout button  
-                    loginModal.style.display = 'none';  
-                    logoutBtn.style.display = 'inline-block';  
-                } else {  
-                    // Belum login, tampilkan modal login  
-                    loginModal.style.display = 'flex';  
-                    logoutBtn.style.display = 'none';  
-                }  
-            });  
-
-            loginForm.addEventListener('submit', async (e) => {  
-                e.preventDefault();  
-                loginError.textContent = '';  
-
-                const email = loginForm.email.value.trim();  
-                const password = loginForm.password.value;  
-
-                try {  
-                    await signInWithEmailAndPassword(auth, email, password);  
-                    loginForm.reset();  
-                } catch (error) {  
-                    loginError.textContent = 'Login gagal: ' + error.message;  
-                }  
-            });  
-
-            logoutBtn.addEventListener('click', () => {  
-                signOut(auth);  
-            });  
-
-            // Override save invoice button agar simpan ke Firestore  
-            const saveBtn = document.getElementById('saveInvoice');  
-            saveBtn.addEventListener('click', async () => {  
-                const user = auth.currentUser;  
-                if (!user) {  
-                    alert('Anda harus login terlebih dahulu!');  
-                    return;  
-                }  
-
-                const clientName = document.getElementById('clientName').value.trim();  
-                const itemList = document.getElementById('itemList');  
-
-                if (!clientName) {  
-                    alert('Silakan isi nama klien terlebih dahulu!');  
-                    return;  
-                }  
-                if (itemList.rows.length === 0) {  
-                    alert('Silakan tambahkan minimal satu item terlebih dahulu!');  
-                    return;  
-                }  
-
-                const invoiceData = {  
-                    userId: user.uid,  
-                    company: {  
-                        name: document.getElementById('companyName').value.trim(),  
-                        address: document.getElementById('companyAddress').value.trim(),  
-                        phone: document.getElementById('companyPhone').value.trim()  
-                    },  
-                    invoiceNumber: document.getElementById('invoiceNumber').value.trim(),  
-                    invoiceDate: document.getElementById('invoiceDate').value.trim(),  
-                    currency: document.getElementById('currency').value,  
-                    client: {  
-                        name: clientName,  
-                        phone: document.getElementById('clientPhone').value.trim(),  
-                        address: document.getElementById('clientAddress').value.trim()  
-                    },  
-                    notes: document.getElementById('notes').value.trim(),  
-                    totalAmount: window.totalAmount || 0,  
-                    items: [],  
-                    createdAt: serverTimestamp()  
-                };  
-
-                for(let i=0; i < itemList.rows.length; i++) {  
-                    const row = itemList.rows[i];  
-                    invoiceData.items.push({  
-                        name: row.dataset.name,  
-                        quantity: parseInt(row.dataset.quantity),  
-                        price: parseFloat(row.dataset.price),  
-                        subtotal: parseInt(row.dataset.quantity) * parseFloat(row.dataset.price)  
-                    });  
-                }  
-
-                try{  
-                    await addDoc(collection(db, "invoices"), invoiceData);  
-                    alert("Invoice berhasil disimpan online!");  
-                    window.resetForm(); // reset form Anda  
-                } catch(err) {  
-                    alert("Gagal menyimpan invoice: " + err.message);  
-                }  
-            });  
-        });  
-    </script>  
 </head>  
 <body>  
-    <!-- Modal Login -->  
-    <div id="loginModal">  
-        <div id="loginModalContent">  
-            <h2>Login ke Aplikasi</h2>  
-            <form id="loginForm">  
-                <input type="email" id="email" name="email" placeholder="Email" required />  
-                <input type="password" id="password" name="password" placeholder="Password" required />  
-                <button type="submit">Login</button>  
-            </form>  
-            <div id="loginError"></div>  
+    <div class="container py-4">  
+        <div class="row justify-content-center">  
+            <div class="col-md-10 col-lg-8">  
+                <div class="card card-custom">  
+                    <div class="card-body p-4">  
+                        <!-- Bagian Autentikasi -->  
+                        <div id="auth-section">  
+                            <h2 class="text-center mb-4">🎉 Undangan Pernikahan</h2>  
+                            <form id="auth-form">  
+                                <div class="mb-3">  
+                                    <label class="form-label">Email</label>  
+                                    <input type="email" id="email" class="form-control" required>  
+                                </div>  
+                                <div class="mb-3">  
+                                    <label class="form-label">Password</label>  
+                                    <input type="password" id="password" class="form-control" required>  
+                                </div>  
+                                <div class="d-grid gap-2">  
+                                    <button type="button" onclick="login()" class="btn btn-custom">Login</button>  
+                                    <button type="button" onclick="register()" class="btn btn-outline-primary">Registrasi</button>  
+                                </div>  
+                            </form>  
+                        </div>  
+
+                        <!-- Bagian Setelah Login -->  
+                        <div id="undangan-section" style="display:none;">  
+                            <!-- Nav Tab -->  
+                            <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">  
+                                <li class="nav-item" role="presentation">  
+                                    <button class="nav-link active" id="undangan-tab" data-bs-toggle="tab"   
+                                            data-bs-target="#undangan" type="button">Undangan</button>  
+                                </li>  
+                                <li class="nav-item" role="presentation">  
+                                    <button class="nav-link" id="daftar-tab" data-bs-toggle="tab"   
+                                            data-bs-target="#daftar" type="button">Daftar Tamu</button>  
+                                </li>  
+                            </ul>  
+
+                            <!-- Tab Content -->  
+                            <div class="tab-content" id="myTabContent">  
+                                <!-- Tab Undangan -->  
+                                <div class="tab-pane fade show active" id="undangan">  
+                                    <h3 class="text-center mb-4">📝 Tambah Tamu</h3>  
+                                    <div class="row g-3">  
+                                        <div class="col-md-6">  
+                                            <label class="form-label">Nama Tamu</label>  
+                                            <input type="text" id="nama-tamu" class="form-control" placeholder="Masukkan nama tamu">  
+                                        </div>  
+                                        <div class="col-md-6">  
+                                            <label class="form-label">Lokasi</label>  
+                                            <input type="text" id="lokasi-tamu" class="form-control" placeholder="Asal/Lokasi">  
+                                        </div>  
+                                        <div class="col-12">  
+                                            <label class="form-label">Status Kehadiran</label>  
+                                            <select id="status-tamu" class="form-select">  
+                                                <option value="Belum Konfirmasi">Belum Konfirmasi</option>  
+                                                <option value="Hadir">Hadir</option>  
+                                                <option value="Tidak Hadir">Tidak Hadir</option>  
+                                            </select>  
+                                        </div>  
+                                        <div class="col-12">  
+                                            <button onclick="tambahTamu()" class="btn btn-custom w-100">  
+                                                + Tambah Tamu  
+                                            </button>  
+                                        </div>  
+                                    </div>  
+                                </div>  
+
+                                <!-- Tab Daftar Tamu -->  
+                                <div class="tab-pane fade" id="daftar">  
+                                    <div class="d-flex justify-content-between align-items-center mb-3">  
+                                        <h4 class="m-0">Daftar Tamu</h4>  
+                                        <div>  
+                                            <span class="badge bg-primary me-2" id="total-tamu">0 Tamu</span>  
+                                            <button onclick="cetakDaftarTamu()" class="btn btn-success btn-sm">  
+                                                <i class="bi bi-printer"></i> Cetak  
+                                            </button>  
+                                        </div>  
+                                    </div>  
+                                    <div class="table-responsive">  
+                                        <table class="table table-striped table-hover">  
+                                            <thead>  
+                                                <tr>  
+                                                    <th>Nama</th>  
+                                                    <th>Lokasi</th>  
+                                                    <th>Status</th>  
+                                                    <th>Aksi</th>  
+                                                </tr>  
+                                            </thead>  
+                                            <tbody id="tabel-daftar-tamu">  
+                                                <!-- Isi tabel akan ditambahkan secara dinamis -->  
+                                            </tbody>  
+                                        </table>  
+                                    </div>  
+                                </div>  
+                            </div>  
+                        </div>  
+                    </div>  
+                </div>  
+            </div>  
         </div>  
     </div>  
 
-    <button id="logoutBtn">Logout</button>  
-
-    <div class="container">  
-        <!-- Semua isi form invoice Anda tetap sama -->  
-        <div class="no-print">  
-            <h1>Aplikasi Input Invoice</h1>  
-        </div>  
-        
-        <div class="print-header" style="display: none;">  
-            <h1>INVOICE</h1>  
-            <div class="print-company-info">  
-                <p>Firman Grup</p>  
-                <p>Kota Metro</p>  
-                <p>Telepon: 082379821111</p>  
-                <p>No. Invoice: <span id="printInvoiceNumber"></span></p>  
-                <p>Tanggal: <span id="printInvoiceDate"></span></p>  
-            </div>  
-        </div>  
-        
-        <form id="invoiceForm">  
-            <div class="no-print">  
-                <div class="form-grid">  
-                    <div class="form-section">  
-                        <h2>Informasi Perusahaan</h2>  
-                        <div class="form-group">  
-                            <label for="companyName">Nama Perusahaan</label>  
-                            <input type="text" id="companyName" value="Firman Grup" required />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="companyAddress">Alamat</label>  
-                            <input type="text" id="companyAddress" value="Kota Metro" required />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="companyPhone">Telepon</label>  
-                            <input type="tel" id="companyPhone" value="082379821111" required />  
-                        </div>  
-                    </div>  
-                    
-                    <div class="form-section">  
-                        <h2>Informasi Invoice</h2>  
-                        <div class="form-group">  
-                            <label for="invoiceNumber">Nomor Invoice</label>  
-                            <input type="text" id="invoiceNumber" placeholder="Nomor Invoice" required />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="invoiceDate">Tanggal</label>  
-                            <input type="text" id="invoiceDate" required readonly />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="currency">Mata Uang</label>  
-                            <select id="currency">  
-                                <option value="IDR">IDR</option>  
-                                <option value="USD">USD</option>  
-                                <option value="EUR">EUR</option>  
-                            </select>  
-                        </div>  
-                    </div>  
-                </div>  
-                
-                <div class="form-section">  
-                    <h2>Informasi Klien</h2>  
-                    <div class="form-grid">  
-                        <div class="form-group">  
-                            <label for="clientName">Nama Klien</label>  
-                            <input type="text" id="clientName" placeholder="Nama Klien" required />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="clientPhone">Telepon Klien</label>  
-                            <input type="tel" id="clientPhone" placeholder="Nomor Telepon Klien" required />  
-                        </div>  
-                    </div>  
-                    <div class="form-group">  
-                        <label for="clientAddress">Alamat Klien</label>  
-                        <input type="text" id="clientAddress" placeholder="Alamat Klien" required />  
-                    </div>  
-                </div>  
-
-                <div class="form-section item-form">  
-                    <h2>Tambah Item</h2>  
-                    <div class="item-form-grid">  
-                        <div class="form-group">  
-                            <label for="itemName">Nama Barang</label>  
-                            <input type="text" id="itemName" placeholder="Nama Barang" required />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="itemQuantity">Jumlah</label>  
-                            <input type="number" id="itemQuantity" placeholder="Jumlah" required min="1" />  
-                        </div>  
-                        <div class="form-group">  
-                            <label for="itemPrice">Harga</label>  
-                            <input type="text" id="itemPrice" placeholder="Harga" required />  
-                        </div>  
-                        <div>  
-                            <button type="button" id="addItem">Tambah ke Daftar</button>  
-                            <button type="button" id="updateItem" style="display:none; background-color: #ffc107; color: black;">Update Item</button>  
-                            <input type="hidden" id="editItemIndex" value="" />  
-                        </div>  
-                    </div>  
-                </div>  
-            </div>  
-
-            <h2>Daftar Item</h2>  
-            <div style="overflow-x: auto;">  
-                <table>  
-                    <thead>  
-                        <tr>  
-                            <th>No</th>  
-                            <th>Nama Barang</th>  
-                            <th>Jumlah</th>  
-                            <th>Harga</th>  
-                            <th>Subtotal</th>  
-                            <th class="no-print">Aksi</th>  
-                        </tr>  
-                    </thead>  
-                    <tbody id="itemList">  
-                        <!-- Daftar item akan dimasukkan di sini -->  
-                    </tbody>  
-                </table>  
-            </div>  
-
-            <div class="total">Total: <span id="totalAmount">0</span></div>  
-            
-            <h2>Catatan</h2>  
-            <textarea id="notes" placeholder="Catatan tambahan..."></textarea>  
-
-            <div class="footer">  
-                <div class="signature">  
-                    <p>Diterima oleh,</p>  
-                    <br /><br />  
-                    <p>________________</p>  
-                    <p>Nama Jelas & Cap</p>  
-                </div>  
-                <div class="signature">  
-                    <p>Hormat Kami,</p>  
-                    <br /><br />  
-                    <p>________________</p>  
-                    <p>Manager Keuangan</p>  
-                </div>  
-            </div>  
-
-            <div class="actions no-print">  
-                <button type="button" id="resetForm">Reset</button>  
-                <button type="button" id="saveInvoice">Simpan</button>  
-                <button type="button" id="printInvoice">Cetak Invoice</button>  
-            </div>  
-        </form>  
-    </div>  
+    <!-- Library -->  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>  
 
     <script>  
-        // ==== Semua JavaScript Anda sama persis ====  
-
-        function setCurrentDate() {  
-            const today = new Date();  
-            const day = String(today.getDate()).padStart(2, '0');  
-            const month = String(today.getMonth() + 1).padStart(2, '0');  
-            const year = today.getFullYear();  
-            
-            document.getElementById('invoiceDate').value = `${day}/${month}/${year}`;  
-        }  
-        
-        function generateInvoiceNumber() {  
-            const today = new Date();  
-            const year = today.getFullYear();  
-            const month = String(today.getMonth() + 1).padStart(2, '0');  
-            const day = String(today.getDate()).padStart(2, '0');  
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');  
-            
-            return `INV-${year}${month}${day}-${random}`;  
-        }  
-
-        function formatNumber(num) {  
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");  
-        }  
-
-        function unformatNumber(str) {  
-            return parseFloat(str.replace(/\./g, '').replace(',', '.'));  
-        }  
-
-        document.getElementById('itemPrice').addEventListener('input', function(e) {  
-            let value = this.value.replace(/[^\d]/g, '');  
-            let number = parseInt(value);  
-            if (!isNaN(number)) {  
-                this.value = formatNumber(number);  
-            } else {  
-                this.value = '';  
-            }  
-        });  
-
-        window.resetForm = function() {  
-            document.getElementById('companyName').value = 'Firman Grup';  
-            document.getElementById('companyAddress').value = 'Kota Metro';  
-            document.getElementById('companyPhone').value = '082379821111';  
-            document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
-            setCurrentDate();  
-            document.getElementById('clientName').value = '';  
-            document.getElementById('clientAddress').value = '';  
-            document.getElementById('clientPhone').value = '';  
-            document.getElementById('itemName').value = '';  
-            document.getElementById('itemQuantity').value = '';  
-            document.getElementById('itemPrice').value = '';  
-            document.getElementById('itemList').innerHTML = '';  
-            window.totalAmount = 0;  
-            document.getElementById('totalAmount').textContent = '0';  
-            document.getElementById('notes').value = '';  
-            window.itemCounter = 1;  
-            exitEditMode();  
-        }  
-
-        window.onload = function() {  
-            setCurrentDate();  
-            document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
+        // Konfigurasi Firebase  
+        const firebaseConfig = {  
+            apiKey: "AIzaSyCRm31FJaqEbjL_MqMKKiiQRlurYenc4Dc",  
+            authDomain: "project-baru-28a4a.firebaseapp.com",  
+            projectId: "project-baru-28a4a",  
+            storageBucket: "project-baru-28a4a.firebasestorage.app",  
+            messagingSenderId: "1046595689835",  
+            appId: "1:1046595689835:web:5c7eb22e357e36ff11802e"  
         };  
 
-        window.itemCounter = 1;  
-        window.totalAmount = 0;  
+        // Inisialisasi Firebase  
+        firebase.initializeApp(firebaseConfig);  
+        const auth = firebase.auth();  
+        const database = firebase.database();  
 
-        function addItemToList() {  
-            const itemName = document.getElementById('itemName').value;  
-            const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
-            const itemPriceStr = document.getElementById('itemPrice').value;  
-            const itemPrice = unformatNumber(itemPriceStr);  
-            
-            if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
-                const subtotal = itemQuantity * itemPrice;  
-                const tableRow = document.createElement('tr');  
-                tableRow.dataset.name = itemName;  
-                tableRow.dataset.quantity = itemQuantity;  
-                tableRow.dataset.price = itemPrice;  
-                
-                tableRow.innerHTML = `  
-                    <td>${window.itemCounter}</td>  
-                    <td>${itemName}</td>  
-                    <td>${itemQuantity}</td>  
-                    <td class="right">${formatNumber(itemPrice)}</td>  
-                    <td class="right">${formatNumber(subtotal)}</td>  
-                    <td class="no-print">  
-                        <button type="button" class="editBtn">Edit</button>  
-                        <button type="button" class="deleteBtn">Hapus</button>  
-                    </td>  
-                `;  
-                
-                document.getElementById('itemList').appendChild(tableRow);  
-                
-                document.getElementById('itemName').value = '';  
-                document.getElementById('itemQuantity').value = '';  
-                document.getElementById('itemPrice').value = '';  
-                
-                window.itemCounter++;  
-                window.totalAmount += subtotal;  
-                document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
-                
-                addButtonListeners(tableRow);  
-                
-                return true;  
-            } else {  
-                alert('Silakan isi semua data item dengan benar!');  
-                return false;  
-            }  
+        // Array untuk menyimpan daftar tamu  
+        let daftarTamu = [];  
+
+        // Fungsi Login  
+        function login() {  
+            const email = document.getElementById('email').value;  
+            const password = document.getElementById('password').value;  
+
+            auth.signInWithEmailAndPassword(email, password)  
+                .then((userCredential) => {  
+                    Swal.fire({  
+                        icon: 'success',  
+                        title: 'Login Berhasil!',  
+                        toast: true,  
+                        position: 'top-end',  
+                        showConfirmButton: false,  
+                        timer: 1500  
+                    });  
+                    document.getElementById('auth-section').style.display = 'none';  
+                    document.getElementById('undangan-section').style.display = 'block';  
+                })  
+                .catch((error) => {  
+                    Swal.fire({  
+                        icon: 'error',  
+                        title: 'Login Gagal',  
+                        text: error.message  
+                    });  
+                });  
         }  
 
-        function addButtonListeners(tableRow) {  
-            const deleteButton = tableRow.querySelector('.deleteBtn');  
-            deleteButton.addEventListener('click', function() {  
-                const row = this.closest('tr');  
-                const rowSubtotal = unformatNumber(row.cells[4].textContent);  
-                window.totalAmount -= rowSubtotal;  
-                document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
-                row.remove();  
-                const rows = document.getElementById('itemList').rows;  
-                for(let i=0; i<rows.length; i++) {  
-                    rows[i].cells[0].textContent = i+1;  
+        // Fungsi Registrasi  
+        function register() {  
+            const email = document.getElementById('email').value;  
+            const password = document.getElementById('password').value;  
+
+            auth.createUserWithEmailAndPassword(email, password)  
+                .then((userCredential) => {  
+                    Swal.fire({  
+                        icon: 'success',  
+                        title: 'Registrasi Berhasil!',  
+                        text: 'Silakan login',  
+                        toast: true,  
+                        position: 'top-end',  
+                        showConfirmButton: false,  
+                        timer: 1500  
+                    });  
+                })  
+                .catch((error) => {  
+                    Swal.fire({  
+                        icon: 'error',  
+                        title: 'Registrasi Gagal',  
+                        text: error.message  
+                    });  
+                });  
+        }  
+
+        // Fungsi Tambah Tamu  
+        function tambahTamu() {  
+            const namaTamu = document.getElementById('nama-tamu').value.trim();  
+            const lokasiTamu = document.getElementById('lokasi-tamu').value.trim();  
+            const statusTamu = document.getElementById('status-tamu').value;  
+
+            // Validasi input  
+            if (!namaTamu || !lokasiTamu) {  
+                Swal.fire({  
+                    icon: 'warning',  
+                    title: 'Data Tidak Lengkap',  
+                    text: 'Silakan isi nama dan lokasi tamu'  
+                });  
+                return;  
+            }  
+
+            // Buat objek tamu  
+            const tamu = {  
+                id: Date.now(), // Tambah ID unik  
+                nama: namaTamu,  
+                lokasi: lokasiTamu,  
+                status: statusTamu  
+            };  
+
+            // Tambah ke array  
+            daftarTamu.push(tamu);  
+
+            // Tambah ke tabel  
+            const tabelDaftarTamu = document.getElementById('tabel-daftar-tamu');  
+            const tr = document.createElement('tr');  
+            tr.innerHTML = `  
+                <td>${tamu.nama}</td>  
+                <td>${tamu.lokasi}</td>  
+                <td>  
+                    <span class="badge ${  
+                        tamu.status === 'Hadir' ? 'bg-success' :   
+                        tamu.status === 'Tidak Hadir' ? 'bg-danger' : 'bg-warning'  
+                    }">  
+                        ${tamu.status}  
+                    </span>  
+                </td>  
+                <td>  
+                    <div class="btn-group" role="group">  
+                        <button onclick="editTamu(${tamu.id})" class="btn btn-warning btn-sm">  
+                            <i class="bi bi-pencil"></i> Edit  
+                        </button>  
+                        <button onclick="hapusTamu(${tamu.id})" class="btn btn-danger btn-sm">  
+                            <i class="bi bi-trash"></i> Hapus  
+                        </button>  
+                    </div>  
+                </td>  
+            `;  
+            tabelDaftarTamu.appendChild(tr);  
+
+            // Update total tamu  
+            document.getElementById('total-tamu').textContent = `${daftarTamu.length} Tamu`;  
+
+            // Reset input  
+            document.getElementById('nama-tamu').value = '';  
+            document.getElementById('lokasi-tamu').value = '';  
+            document.getElementById('status-tamu').selectedIndex = 0;  
+
+            // Notifikasi  
+            Swal.fire({  
+                icon: 'success',  
+                title: 'Tamu Ditambahkan',  
+                toast: true,  
+                position: 'top-end',  
+                showConfirmButton: false,  
+                timer: 1500  
+            });  
+        }  
+
+        // Fungsi Edit Tamu  
+        function editTamu(id) {  
+            // Temukan tamu yang akan diedit  
+            const tamu = daftarTamu.find(t => t.id === id);  
+            
+            Swal.fire({  
+                title: 'Edit Tamu',  
+                html: `  
+                    <input type="text" id="swal-input-nama" class="swal2-input" placeholder="Nama Tamu" value="${tamu.nama}">  
+                    <input type="text" id="swal-input-lokasi" class="swal2-input" placeholder="Lokasi" value="${tamu.lokasi}">  
+                    <select id="swal-input-status" class="swal2-select">  
+                        <option value="Belum Konfirmasi" ${tamu.status === 'Belum Konfirmasi' ? 'selected' : ''}>Belum Konfirmasi</option>  
+                        <option value="Hadir" ${tamu.status === 'Hadir' ? 'selected' : ''}>Hadir</option>  
+                        <option value="Tidak Hadir" ${tamu.status === 'Tidak Hadir' ? 'selected' : ''}>Tidak Hadir</option>  
+                    </select>  
+                `,  
+                focusConfirm: false,  
+                preConfirm: () => {  
+                    const nama = document.getElementById('swal-input-nama').value;  
+                    const lokasi = document.getElementById('swal-input-lokasi').value;  
+                    const status = document.getElementById('swal-input-status').value;  
+
+                    if (!nama || !lokasi) {  
+                        Swal.showValidationMessage('Nama dan Lokasi harus diisi');  
+                        return false;  
+                    }  
+
+                    return { nama, lokasi, status };  
                 }  
-                window.itemCounter = rows.length +1;  
-                if(document.getElementById('editItemIndex').value) {  
-                    exitEditMode();  
+            }).then((result) => {  
+                if (result.value) {  
+                    // Update di array  
+                    const index = daftarTamu.findIndex(t => t.id === id);  
+                    daftarTamu[index] = { ...daftarTamu[index], ...result.value };  
+
+                    // Update di tabel  
+                    const rows = document.getElementById('tabel-daftar-tamu').getElementsByTagName('tr');  
+                    for (let row of rows) {  
+                        if (row.querySelector(`button[onclick="editTamu(${id})"]`)) {  
+                            row.innerHTML = `  
+                                <td>${result.value.nama}</td>  
+                                <td>${result.value.lokasi}</td>  
+                                <td>  
+                                    <span class="badge ${  
+                                        result.value.status === 'Hadir' ? 'bg-success' :   
+                                        result.value.status === 'Tidak Hadir' ? 'bg-danger' : 'bg-warning'  
+                                    }">  
+                                        ${result.value.status}  
+                                    </span>  
+                                </td>  
+                                <td>  
+                                    <div class="btn-group" role="group">  
+                                        <button onclick="editTamu(${id})" class="btn btn-warning btn-sm">  
+                                            <i class="bi bi-pencil"></i> Edit  
+                                        </button>  
+                                        <button onclick="hapusTamu(${id})" class="btn btn-danger btn-sm">  
+                                            <i class="bi bi-trash"></i> Hapus  
+                                        </button>  
+                                    </div>  
+                                </td>  
+                            `;  
+                            break;  
+                        }  
+                    }  
+
+                    Swal.fire({  
+                        icon: 'success',  
+                        title: 'Tamu Diperbarui',  
+                        toast: true,  
+                        position: 'top-end',  
+                        showConfirmButton: false,  
+                        timer: 1500  
+                    });  
                 }  
             });  
-            
-            const editButton = tableRow.querySelector('.editBtn');  
-            editButton.addEventListener('click', function() {  
-                const row = this.closest('tr');  
-                const rowIndex = row.rowIndex;  
-                document.getElementById('itemName').value = row.dataset.name;  
-                document.getElementById('itemQuantity').value = row.dataset.quantity;  
-                document.getElementById('itemPrice').value = formatNumber(row.dataset.price);  
-                document.getElementById('editItemIndex').value = rowIndex;  
-                document.getElementById('addItem').style.display = 'none';  
-                document.getElementById('updateItem').style.display = 'inline-block';  
-                document.getElementById('itemName').scrollIntoView({behavior:'smooth'});  
+        }  
+
+        // Fungsi Hapus Tamu  
+        function hapusTamu(id) {  
+            Swal.fire({  
+                title: 'Hapus Tamu?',  
+                text: "Anda yakin ingin menghapus tamu ini?",  
+                icon: 'warning',  
+                showCancelButton: true,  
+                confirmButtonColor: '#3085d6',  
+                cancelButtonColor: '#d33',  
+                confirmButtonText: 'Ya, Hapus!'  
+            }).then((result) => {  
+                if (result.isConfirmed) {  
+                    // Hapus dari array  
+                    const index = daftarTamu.findIndex(tamu => tamu.id === id);  
+                    if (index > -1) {  
+                        daftarTamu.splice(index, 1);  
+                    }  
+
+                    // Hapus dari tabel  
+                    const rows = document.getElementById('tabel-daftar-tamu').getElementsByTagName('tr');  
+                    for (let row of rows) {  
+                        if (row.querySelector(`button[onclick="hapusTamu(${id})"]`)) {  
+                            row.remove();  
+                            break;  
+                        }  
+                    }  
+
+                    // Update total tamu  
+                    document.getElementById('total-tamu').textContent = `${daftarTamu.length} Tamu`;  
+
+                    Swal.fire(  
+                        'Dihapus!',  
+                        'Tamu telah dihapus dari daftar.',  
+                        'success'  
+                    );  
+                }  
             });  
         }  
 
-        function exitEditMode() {  
-            document.getElementById('editItemIndex').value = '';  
-            document.getElementById('addItem').style.display = 'inline-block';  
-            document.getElementById('updateItem').style.display = 'none';  
+        // Fungsi Cetak Daftar Tamu  
+        function cetakDaftarTamu() {  
+            // Buat jendela cetak baru  
+            const printWindow = window.open('', '', 'width=600,height=800');  
+            
+            // Buat konten cetak  
+            printWindow.document.write(`  
+                <html>  
+                    <head>  
+                        <title>Daftar Tamu Pernikahan</title>  
+                        <style>  
+                            body { font-family: Arial, sans-serif; }  
+                            table { width: 100%; border-collapse: collapse; }  
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }  
+                            th { background-color: #f2f2f2; }  
+                            h1 { text-align: center; }  
+                        </style>  
+                    </head>  
+                    <body>  
+                        <h1>Daftar Tamu Pernikahan Firman & Resti</h1>  
+                        <table>  
+                            <thead>  
+                                <tr>  
+                                    <th>No</th>  
+                                    <th>Nama</th>  
+                                    <th>Lokasi</th>  
+                                    <th>Status</th>  
+                                </tr>  
+                            </thead>  
+                            <tbody>  
+                                ${daftarTamu.map((tamu, index) => `  
+                                    <tr>  
+                                        <td>${index + 1}</td>  
+                                        <td>${tamu.nama}</td>  
+                                        <td>${tamu.lokasi}</td>  
+                                        <td>${tamu.status}</td>  
+                                    </tr>  
+                                `).join('')}  
+                            </tbody>  
+                        </table>  
+                        <p>Total Tamu: ${daftarTamu.length}</p>  
+                    </body>  
+                </html>  
+            `);  
+
+            printWindow.document.close();  
+            printWindow.print();  
         }  
 
-        document.getElementById('addItem').addEventListener('click', () => addItemToList());  
-
-        document.getElementById('updateItem').addEventListener('click', () => {  
-            const rowIndex = document.getElementById('editItemIndex').value;  
-            if(!rowIndex) return;  
-            const itemName = document.getElementById('itemName').value;  
-            const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
-            const itemPriceStr = document.getElementById('itemPrice').value;  
-            const itemPrice = unformatNumber(itemPriceStr);  
-            if(itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
-                const rows = document.getElementById('itemList').rows;  
-                const row = rows[rowIndex-1];  
-                if(row) {  
-                    const oldSubtotal = unformatNumber(row.cells[4].textContent);  
-                    const newSubtotal = itemQuantity * itemPrice;  
-                    window.totalAmount = window.totalAmount - oldSubtotal + newSubtotal;  
-                    document.getElementById('totalAmount').textContent = formatNumber(window.totalAmount);  
-                    row.dataset.name = itemName;  
-                    row.dataset.quantity = itemQuantity;  
-                    row.dataset.price = itemPrice;  
-                    row.cells[1].textContent = itemName;  
-                    row.cells[2].textContent = itemQuantity;  
-                    row.cells[3].textContent = formatNumber(itemPrice);  
-                    row.cells[4].textContent = formatNumber(newSubtotal);  
-                    document.getElementById('itemName').value = '';  
-                    document.getElementById('itemQuantity').value = '';  
-                    document.getElementById('itemPrice').value = '';  
-                    exitEditMode();  
-                }  
-            } else {  
-                alert('Silakan isi semua data item dengan benar!');  
+        // Fungsi Simpan Daftar Tamu  
+        function simpanDaftarTamu() {  
+            if (daftarTamu.length === 0) {  
+                Swal.fire({  
+                    icon: 'warning',  
+                    title: 'Daftar Tamu Kosong',  
+                    text: 'Silakan tambahkan minimal satu tamu'  
+                });  
+                return;  
             }  
-        });  
 
-        document.getElementById('resetForm').addEventListener('click', () => {  
-            if(confirm('Anda yakin ingin mereset seluruh form?')) {  
-                resetForm();  
-            }  
-        });  
-
-        document.getElementById('printInvoice').addEventListener('click', () => {  
-            const clientName = document.getElementById('clientName').value;  
-            if(!clientName) { alert('Silakan isi informasi klien terlebih dahulu!'); return; }  
-            if(document.getElementById('itemList').rows.length === 0) { alert('Silakan tambahkan minimal satu item terlebih dahulu!'); return; }  
-            document.querySelector('.print-header').style.display = 'block';  
-            document.getElementById('printInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;  
-            document.getElementById('printInvoiceDate').textContent = document.getElementById('invoiceDate').value;  
-            window.print();  
-            setTimeout(() => { document.querySelector('.print-header').style.display = 'none'; }, 1000);  
-        });  
-
-        document.getElementById('printInvoice').addEventListener('click', () => {  
-            const notes = document.getElementById('notes');  
-            const notesOriginalHeight = notes.style.height;  
-            if(notes.value.length > 100) { notes.style.height = '60px'; }  
-            else if(notes.value.length > 0) { notes.style.height = '40px'; }  
-            else { notes.style.height = '20px'; }  
-            setTimeout(() => { notes.style.height = notesOriginalHeight; }, 1000);  
-        });  
-
-        document.getElementById('itemPrice').addEventListener('keypress', (e) => {  
-            if(e.key === 'Enter') {  
-                e.preventDefault();  
-                if(document.getElementById('updateItem').style.display === 'inline-block') {  
-                    document.getElementById('updateItem').click();  
-                } else {  
-                    document.getElementById('addItem').click();  
-                }  
-            }  
-        });  
+            const undanganRef = database.ref('undangan_firman_resti/daftar_tamu');  
+            
+            undanganRef.set(daftarTamu)  
+                .then(() => {  
+                    Swal.fire({  
+                        icon: 'success',  
+                        title: 'Daftar Tamu Tersimpan',  
+                        text: `Berhasil menyimpan ${daftarTamu.length} tamu`  
+                    });  
+                })  
+                .catch((error) => {  
+                    Swal.fire({  
+                        icon: 'error',  
+                        title: 'Gagal Menyimpan',  
+                        text: error.message  
+                    });  
+                });  
+        }  
     </script>  
 </body>  
 </html>
