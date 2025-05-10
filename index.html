@@ -1,0 +1,755 @@
+<!DOCTYPE html>  
+<html lang="id">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Aplikasi Input Invoice - Firman Grup</title>  
+    <style>  
+        @font-face {  
+            font-family: 'CustomFont';  
+            src: url('/mnt/data/file-ngwyeoEN29l1M3O1QpdxCwkj');  
+        }  
+        body {  
+            font-family: 'CustomFont', Arial, sans-serif;  
+            background-color: #f5f5f5;  
+            margin: 0;  
+            padding: 20px;  
+            font-size: 14px;  
+        }  
+        .container {  
+            max-width: 800px;  
+            margin: auto;  
+            background: #fff;  
+            padding: 20px;  
+            border-radius: 8px;  
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  
+        }  
+        h1 {  
+            text-align: center;  
+            margin-bottom: 20px;  
+            font-size: 24px;  
+        }  
+        h2 {  
+            text-align: left;  
+            margin: 15px 0 5px 0;  
+            font-size: 16px;  
+            border-bottom: 1px solid #eee;  
+            padding-bottom: 5px;  
+        }  
+        .form-section {  
+            margin-bottom: 20px;  
+        }  
+        .form-grid {  
+            display: grid;  
+            grid-template-columns: 1fr 1fr;  
+            gap: 10px;  
+        }  
+        .form-group {  
+            margin-bottom: 8px;  
+        }  
+        .form-group label {  
+            display: block;  
+            font-size: 12px;  
+            margin-bottom: 3px;  
+            font-weight: bold;  
+        }  
+        input, select, textarea {  
+            width: 100%;  
+            padding: 6px 8px;  
+            border: 1px solid #ccc;  
+            border-radius: 4px;  
+            font-size: 14px;  
+            box-sizing: border-box;  
+        }  
+        textarea {  
+            height: 100px;  
+            resize: vertical;  
+        }  
+        button {  
+            padding: 8px 12px;  
+            margin: 5px;  
+            border: none;  
+            border-radius: 4px;  
+            background-color: #28a745;  
+            color: white;  
+            cursor: pointer;  
+            font-size: 14px;  
+        }  
+        button:hover {  
+            background-color: #218838;  
+        }  
+        .deleteBtn {  
+            background-color: #dc3545;  
+        }  
+        .deleteBtn:hover {  
+            background-color: #c82333;  
+        }  
+        .editBtn {  
+            background-color: #007bff;  
+        }  
+        .editBtn:hover {  
+            background-color: #0069d9;  
+        }  
+        table {  
+            width: 100%;  
+            border-collapse: collapse;  
+            margin-top: 10px;  
+        }  
+        th, td {  
+            border: 1px solid #ddd;  
+            padding: 8px;  
+        }  
+        th {  
+            background-color: #f2f2f2;  
+            font-size: 14px;  
+        }  
+        td {  
+            font-size: 14px;  
+        }  
+        .right {  
+            text-align: right;  
+        }  
+        .total {  
+            font-weight: bold;  
+            text-align: right;  
+            margin-top: 10px;  
+        }  
+        .footer {  
+            margin-top: 30px;  
+            display: flex;  
+            justify-content: space-between;  
+        }  
+        .signature {  
+            text-align: center;  
+            width: 45%;  
+        }  
+        .actions {  
+            margin-top: 20px;  
+            text-align: center;  
+        }  
+        .item-form {  
+            background-color: #f9f9f9;  
+            padding: 10px;  
+            border-radius: 5px;  
+            margin: 10px 0;  
+        }  
+        .item-form-grid {  
+            display: grid;  
+            grid-template-columns: 3fr 1fr 1fr auto;  
+            gap: 10px;  
+            align-items: end;  
+        }  
+        
+        /* Styles for responsive design */  
+        @media screen and (max-width: 768px) {  
+            body {  
+                padding: 10px;  
+            }  
+            .container {  
+                padding: 15px;  
+            }  
+            .form-grid {  
+                grid-template-columns: 1fr;  
+            }  
+            .item-form-grid {  
+                grid-template-columns: 1fr 1fr;  
+                grid-template-areas:   
+                    "name name"  
+                    "qty price"  
+                    "btn btn";  
+            }  
+            .item-form-grid .form-group:nth-child(1) {  
+                grid-area: name;  
+            }  
+            .item-form-grid .form-group:nth-child(2) {  
+                grid-area: qty;  
+            }  
+            .item-form-grid .form-group:nth-child(3) {  
+                grid-area: price;  
+            }  
+            .item-form-grid > div:last-child {  
+                grid-area: btn;  
+                display: flex;  
+                justify-content: center;  
+            }  
+            table {  
+                display: block;  
+                overflow-x: auto;  
+                white-space: nowrap;  
+            }  
+            .footer {  
+                flex-direction: column;  
+                align-items: center;  
+            }  
+            .signature {  
+                width: 100%;  
+                margin-bottom: 20px;  
+            }  
+            .actions button {  
+                margin: 5px 2px;  
+                padding: 8px 10px;  
+                width: 45%;  
+            }  
+        }  
+        
+        @media screen and (max-width: 480px) {  
+            h1 {  
+                font-size: 20px;  
+            }  
+            h2 {  
+                font-size: 15px;  
+            }  
+            .actions button {  
+                width: 100%;  
+                margin: 5px 0;  
+            }  
+        }  
+        
+        /* Styles for print version */  
+        @media print {  
+            body {  
+                background-color: white;  
+                padding: 0;  
+                margin: 0;  
+                font-size: 10pt;  
+            }  
+            .container {  
+                box-shadow: none;  
+                max-width: 100%;  
+                padding: 10px;  
+                margin: 0;  
+            }  
+            .no-print {  
+                display: none !important;  
+            }  
+            .print-header {  
+                margin-bottom: 10px;  
+                text-align: left;  
+            }  
+            .print-header h1 {  
+                font-size: 14pt;  
+                margin-bottom: 2px;  
+                text-align: center;  
+            }  
+            .print-company-info {  
+                text-align: left;  
+                font-size: 10pt;  
+            }  
+            .print-company-info p {  
+                margin: 2px 0;  
+            }  
+            h2 {  
+                font-size: 12pt;  
+                margin: 10px 0 5px 0;  
+            }  
+            table {  
+                margin-top: 10px;  
+                font-size: 9pt;  
+            }  
+            th, td {  
+                padding: 4px;  
+            }  
+            textarea {  
+                height: auto;  
+                min-height: 40px;  
+            }  
+            .footer {  
+                margin-top: 15px;  
+                font-size: 9pt;  
+            }  
+            .signature p {  
+                margin: 2px 0;  
+            }  
+            .total {  
+                margin: 5px 0;  
+            }  
+        }  
+    </style>  
+</head>  
+<body>  
+
+<div class="container">  
+    <div class="no-print">  
+        <h1>Aplikasi Input Invoice</h1>  
+    </div>  
+    
+    <div class="print-header" style="display: none;">  
+        <h1>INVOICE</h1>  
+        <div class="print-company-info">  
+            <p>Firman Grup</p>  
+            <p>Kota Metro</p>  
+            <p>Telepon: 082379821111</p>  
+            <p>No. Invoice: <span id="printInvoiceNumber"></span></p>  
+            <p>Tanggal: <span id="printInvoiceDate"></span></p>  
+        </div>  
+    </div>  
+    
+    <form id="invoiceForm">  
+        <div class="no-print">  
+            <div class="form-grid">  
+                <div class="form-section">  
+                    <h2>Informasi Perusahaan</h2>  
+                    <div class="form-group">  
+                        <label for="companyName">Nama Perusahaan</label>  
+                        <input type="text" id="companyName" value="Firman Grup" required>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="companyAddress">Alamat</label>  
+                        <input type="text" id="companyAddress" value="Kota Metro" required>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="companyPhone">Telepon</label>  
+                        <input type="tel" id="companyPhone" value="082379821111" required>  
+                    </div>  
+                </div>  
+                
+                <div class="form-section">  
+                    <h2>Informasi Invoice</h2>  
+                    <div class="form-group">  
+                        <label for="invoiceNumber">Nomor Invoice</label>  
+                        <input type="text" id="invoiceNumber" placeholder="Nomor Invoice" required>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="invoiceDate">Tanggal</label>  
+                        <input type="text" id="invoiceDate" required readonly>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="currency">Mata Uang</label>  
+                        <select id="currency">  
+                            <option value="IDR">IDR</option>  
+                            <option value="USD">USD</option>  
+                            <option value="EUR">EUR</option>  
+                        </select>  
+                    </div>  
+                </div>  
+            </div>  
+            
+            <div class="form-section">  
+                <h2>Informasi Klien</h2>  
+                <div class="form-grid">  
+                    <div class="form-group">  
+                        <label for="clientName">Nama Klien</label>  
+                        <input type="text" id="clientName" placeholder="Nama Klien" required>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="clientPhone">Telepon Klien</label>  
+                        <input type="tel" id="clientPhone" placeholder="Nomor Telepon Klien" required>  
+                    </div>  
+                </div>  
+                <div class="form-group">  
+                    <label for="clientAddress">Alamat Klien</label>  
+                    <input type="text" id="clientAddress" placeholder="Alamat Klien" required>  
+                </div>  
+            </div>  
+
+            <div class="form-section item-form">  
+                <h2>Tambah Item</h2>  
+                <div class="item-form-grid">  
+                    <div class="form-group">  
+                        <label for="itemName">Nama Barang</label>  
+                        <input type="text" id="itemName" placeholder="Nama Barang" required>  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="itemQuantity">Jumlah</label>  
+                        <input type="number" id="itemQuantity" placeholder="Jumlah" required min="1">  
+                    </div>  
+                    <div class="form-group">  
+                        <label for="itemPrice">Harga</label>  
+                        <input type="text" id="itemPrice" placeholder="Harga" required>  
+                    </div>  
+                    <div>  
+                        <button type="button" id="addItem">Tambah ke Daftar</button>  
+                        <button type="button" id="updateItem" style="display:none; background-color: #ffc107; color: black;">Update Item</button>  
+                        <input type="hidden" id="editItemIndex" value="">  
+                    </div>  
+                </div>  
+            </div>  
+        </div>  
+
+        <h2>Daftar Item</h2>  
+        <div style="overflow-x: auto;">  
+            <table>  
+                <thead>  
+                    <tr>  
+                        <th>No</th>  
+                        <th>Nama Barang</th>  
+                        <th>Jumlah</th>  
+                        <th>Harga</th>  
+                        <th>Subtotal</th>  
+                        <th class="no-print">Aksi</th>  
+                    </tr>  
+                </thead>  
+                <tbody id="itemList">  
+                    <!-- Daftar item akan dimasukkan di sini -->  
+                </tbody>  
+            </table>  
+        </div>  
+
+        <div class="total">Total: <span id="totalAmount">0</span></div>  
+        
+        <h2>Catatan</h2>  
+        <textarea id="notes" placeholder="Catatan tambahan..."></textarea>  
+
+        <div class="footer">  
+            <div class="signature">  
+                <p>Diterima oleh,</p>  
+                <br><br>  
+                <p>________________</p>  
+                <p>Nama Jelas & Cap</p>  
+            </div>  
+            <div class="signature">  
+                <p>Hormat Kami,</p>  
+                <br><br>  
+                <p>________________</p>  
+                <p>Manager Keuangan</p>  
+            </div>  
+        </div>  
+
+        <div class="actions no-print">  
+            <button type="button" id="resetForm">Reset</button>  
+            <button type="button" id="saveInvoice">Simpan</button>  
+            <button type="button" id="printInvoice">Cetak Invoice</button>  
+        </div>  
+    </form>  
+</div>  
+
+<script>  
+    // Set tanggal otomatis dalam format dd/mm/yyyy  
+    function setCurrentDate() {  
+        const today = new Date();  
+        const day = String(today.getDate()).padStart(2, '0');  
+        const month = String(today.getMonth() + 1).padStart(2, '0');  
+        const year = today.getFullYear();  
+        
+        document.getElementById('invoiceDate').value = `${day}/${month}/${year}`;  
+    }  
+    
+    // Generate nomor invoice  
+    function generateInvoiceNumber() {  
+        const today = new Date();  
+        const year = today.getFullYear();  
+        const month = String(today.getMonth() + 1).padStart(2, '0');  
+        const day = String(today.getDate()).padStart(2, '0');  
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');  
+        
+        return `INV-${year}${month}${day}-${random}`;  
+    }  
+    
+    // Format angka dengan pemisah ribuan  
+    function formatNumber(num) {  
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");  
+    }  
+    
+    // Unformat angka dari string dengan pemisah ribuan  
+    function unformatNumber(str) {  
+        return parseFloat(str.replace(/\./g, '').replace(',', '.'));  
+    }  
+    
+    // Event listener untuk format harga dengan pemisah ribuan  
+    document.getElementById('itemPrice').addEventListener('input', function(e) {  
+        // Hapus karakter non-digit kecuali titik  
+        let value = this.value.replace(/[^\d]/g, '');  
+        
+        // Konversi ke angka  
+        let number = parseInt(value);  
+        
+        // Format dengan pemisah ribuan jika angka valid  
+        if (!isNaN(number)) {  
+            this.value = formatNumber(number);  
+        } else {  
+            this.value = '';  
+        }  
+    });  
+    
+    // Reset form  
+    function resetForm() {  
+        // Kembali ke nilai default untuk informasi perusahaan  
+        document.getElementById('companyName').value = 'Firman Grup';  
+        document.getElementById('companyAddress').value = 'Kota Metro';  
+        document.getElementById('companyPhone').value = '082379821111';  
+        
+        // Reset informasi invoice  
+        document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
+        setCurrentDate();  
+        
+        // Reset informasi klien  
+        document.getElementById('clientName').value = '';  
+        document.getElementById('clientAddress').value = '';  
+        document.getElementById('clientPhone').value = '';  
+        
+        // Reset form item  
+        document.getElementById('itemName').value = '';  
+        document.getElementById('itemQuantity').value = '';  
+        document.getElementById('itemPrice').value = '';  
+        
+        // Reset daftar item  
+        document.getElementById('itemList').innerHTML = '';  
+        
+        // Reset total  
+        totalAmount = 0;  
+        document.getElementById('totalAmount').textContent = '0';  
+        
+        // Reset catatan  
+        document.getElementById('notes').value = '';  
+        
+        // Reset item counter  
+        itemCounter = 1;  
+        
+        // Reset mode edit  
+        exitEditMode();  
+    }  
+    
+    // Inisialisasi saat halaman dimuat  
+    window.onload = function() {  
+        setCurrentDate();  
+        document.getElementById('invoiceNumber').value = generateInvoiceNumber();  
+    };  
+    
+    // Fungsi untuk menambahkan item ke daftar  
+    let itemCounter = 1;  
+    let totalAmount = 0;  
+    
+    function addItemToList() {  
+        const itemName = document.getElementById('itemName').value;  
+        const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
+        const itemPriceStr = document.getElementById('itemPrice').value;  
+        const itemPrice = unformatNumber(itemPriceStr);  
+        
+        if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
+            const subtotal = itemQuantity * itemPrice;  
+            const tableRow = document.createElement('tr');  
+            tableRow.dataset.name = itemName;  
+            tableRow.dataset.quantity = itemQuantity;  
+            tableRow.dataset.price = itemPrice;  
+            
+            tableRow.innerHTML = `  
+                <td>${itemCounter}</td>  
+                <td>${itemName}</td>  
+                <td>${itemQuantity}</td>  
+                <td class="right">${formatNumber(itemPrice)}</td>  
+                <td class="right">${formatNumber(subtotal)}</td>  
+                <td class="no-print">  
+                    <button type="button" class="editBtn">Edit</button>  
+                    <button type="button" class="deleteBtn">Hapus</button>  
+                </td>  
+            `;  
+            
+            document.getElementById('itemList').appendChild(tableRow);  
+            
+            // Reset form item  
+            document.getElementById('itemName').value = '';  
+            document.getElementById('itemQuantity').value = '';  
+            document.getElementById('itemPrice').value = '';  
+            
+            // Update counter dan total  
+            itemCounter++;  
+            totalAmount += subtotal;  
+            document.getElementById('totalAmount').textContent = formatNumber(totalAmount);  
+            
+            // Tambahkan event listener untuk tombol  
+            addButtonListeners(tableRow);  
+            
+            return true;  
+        } else {  
+            alert('Silakan isi semua data item dengan benar!');  
+            return false;  
+        }  
+    }  
+    
+    function addButtonListeners(tableRow) {  
+        // Event listener untuk tombol hapus  
+        const deleteButton = tableRow.querySelector('.deleteBtn');  
+        deleteButton.addEventListener('click', function() {  
+            const row = this.closest('tr');  
+            const rowSubtotal = unformatNumber(row.cells[4].textContent);  
+            
+            totalAmount -= rowSubtotal;  
+            document.getElementById('totalAmount').textContent = formatNumber(totalAmount);  
+            
+            row.remove();  
+            
+            // Re-number rows  
+            const rows = document.getElementById('itemList').rows;  
+            for (let i = 0; i < rows.length; i++) {  
+                rows[i].cells[0].textContent = i + 1;  
+            }  
+            
+            itemCounter = rows.length + 1;  
+            
+            // Keluar dari mode edit jika sedang edit item yang dihapus  
+            if (document.getElementById('editItemIndex').value) {  
+                exitEditMode();  
+            }  
+        });  
+        
+        // Event listener untuk tombol edit  
+        const editButton = tableRow.querySelector('.editBtn');  
+        editButton.addEventListener('click', function() {  
+            const row = this.closest('tr');  
+            const rowIndex = row.rowIndex;  
+            
+            // Isi form dengan data item  
+            document.getElementById('itemName').value = row.dataset.name;  
+            document.getElementById('itemQuantity').value = row.dataset.quantity;  
+            document.getElementById('itemPrice').value = formatNumber(row.dataset.price);  
+            
+            // Simpan index row yang sedang diedit  
+            document.getElementById('editItemIndex').value = rowIndex;  
+            
+            // Tampilkan tombol update, sembunyikan tombol tambah  
+            document.getElementById('addItem').style.display = 'none';  
+            document.getElementById('updateItem').style.display = 'inline-block';  
+            
+            // Scroll ke form  
+            document.getElementById('itemName').scrollIntoView({behavior: 'smooth'});  
+        });  
+    }  
+    
+    function exitEditMode() {  
+        document.getElementById('editItemIndex').value = '';  
+        document.getElementById('addItem').style.display = 'inline-block';  
+        document.getElementById('updateItem').style.display = 'none';  
+    }  
+    
+    // Event listener untuk tombol tambah item  
+    document.getElementById('addItem').addEventListener('click', function() {  
+        addItemToList();  
+    });  
+    
+    // Event listener untuk tombol update item  
+    document.getElementById('updateItem').addEventListener('click', function() {  
+        const rowIndex = document.getElementById('editItemIndex').value;  
+        if (!rowIndex) return;  
+        
+        const itemName = document.getElementById('itemName').value;  
+        const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
+        const itemPriceStr = document.getElementById('itemPrice').value;  
+        const itemPrice = unformatNumber(itemPriceStr);  
+        
+        if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
+            const rows = document.getElementById('itemList').rows;  
+            const row = rows[rowIndex - 1]; // -1 karena rowIndex dimulai dari 1, sedangkan array dimulai dari 0  
+            
+            if (row) {  
+                // Hitung subtotal baru  
+                const oldSubtotal = unformatNumber(row.cells[4].textContent);  
+                const newSubtotal = itemQuantity * itemPrice;  
+                
+                // Update total  
+                totalAmount = totalAmount - oldSubtotal + newSubtotal;  
+                document.getElementById('totalAmount').textContent = formatNumber(totalAmount);  
+                
+                // Update data row  
+                row.dataset.name = itemName;  
+                row.dataset.quantity = itemQuantity;  
+                row.dataset.price = itemPrice;  
+                
+                // Update tampilan row  
+                row.cells[1].textContent = itemName;  
+                row.cells[2].textContent = itemQuantity;  
+                row.cells[3].textContent = formatNumber(itemPrice);  
+                row.cells[4].textContent = formatNumber(newSubtotal);  
+                
+                // Reset form item  
+                document.getElementById('itemName').value = '';  
+                document.getElementById('itemQuantity').value = '';  
+                document.getElementById('itemPrice').value = '';  
+                
+                // Keluar dari mode edit  
+                exitEditMode();  
+            }  
+        } else {  
+            alert('Silakan isi semua data item dengan benar!');  
+        }  
+    });  
+    
+    // Event listener untuk tombol reset  
+    document.getElementById('resetForm').addEventListener('click', function() {  
+        if (confirm('Anda yakin ingin mereset seluruh form?')) {  
+            resetForm();  
+        }  
+    });  
+    
+    // Fungsi untuk menyimpan invoice (contoh sederhana)  
+    document.getElementById('saveInvoice').addEventListener('click', function() {  
+        // Validasi data  
+        const clientName = document.getElementById('clientName').value;  
+        const itemList = document.getElementById('itemList');  
+        
+        if (!clientName) {  
+            alert('Silakan isi nama klien terlebih dahulu!');  
+            return;  
+        }  
+        
+        if (itemList.rows.length === 0) {  
+            alert('Silakan tambahkan minimal satu item terlebih dahulu!');  
+            return;  
+        }  
+        
+        alert('Invoice berhasil disimpan!');  
+    });  
+    
+    // Fungsi untuk mencetak invoice  
+    document.getElementById('printInvoice').addEventListener('click', function() {  
+        // Memeriksa apakah informasi klien sudah diisi  
+        const clientName = document.getElementById('clientName').value;  
+        if (!clientName) {  
+            alert('Silakan isi informasi klien terlebih dahulu!');  
+            return;  
+        }  
+        
+        // Memeriksa apakah ada item yang ditambahkan  
+        if (document.getElementById('itemList').rows.length === 0) {  
+            alert('Silakan tambahkan minimal satu item terlebih dahulu!');  
+            return;  
+        }  
+        
+        // Siapkan data untuk tampilan cetak  
+        document.querySelector('.print-header').style.display = 'block';  
+        document.getElementById('printInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;  
+        document.getElementById('printInvoiceDate').textContent = document.getElementById('invoiceDate').value;  
+        
+        // Cetak halaman  
+        window.print();  
+        
+        // Kembalikan tampilan setelah cetak  
+        setTimeout(function() {  
+            document.querySelector('.print-header').style.display = 'none';  
+        }, 1000);  
+    });  
+    
+    // Menyesuaikan ukuran textarea saat cetak  
+    document.getElementById('printInvoice').addEventListener('click', function() {  
+        const notes = document.getElementById('notes');  
+        const notesOriginalHeight = notes.style.height;  
+        
+        // Jika catatan terlalu panjang, sesuaikan ukurannya  
+        if (notes.value.length > 100) {  
+            notes.style.height = '60px';  
+        } else if (notes.value.length > 0) {  
+            notes.style.height = '40px';  
+        } else {  
+            notes.style.height = '20px';  
+        }  
+        
+        // Setelah cetak, kembalikan ukuran asli  
+        setTimeout(function() {  
+            notes.style.height = notesOriginalHeight;  
+        }, 1000);  
+    });  
+    
+    // Enter key pada item form akan menambahkan item  
+    document.getElementById('itemPrice').addEventListener('keypress', function(e) {  
+        if (e.key === 'Enter') {  
+            e.preventDefault();  
+            if (document.getElementById('updateItem').style.display === 'inline-block') {  
+                document.getElementById('updateItem').click();  
+            } else {  
+                document.getElementById('addItem').click();  
+            }  
+        }  
+    });  
+</script>  
+
+</body>  
+</html>
