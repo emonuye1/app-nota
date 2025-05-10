@@ -1,24 +1,6 @@
 <!DOCTYPE html>  
 <html lang="id">  
 <head>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  
-    
-    <script>  
-        // Konfigurasi Firebase  
-        const firebaseConfig = {  
-            apiKey: "AIzaSyCkm1fJaQEbj_MqMKKiiQRluyenc4DC",  
-            authDomain: "project-baru-28a4a.firebaseapp.com",  
-            projectId: "project-baru-28a4a",  
-            storageBucket: "project-baru-28a4a.firebasestore.app",  
-            messagingSenderId: "104659568935",  
-            appId: "1:104659568935:web:5c7eb22e357e36ff11802e",  
-            measurementId: "G-2ZGYX0DLW9"  
-        };  
-    
-        // Inisialisasi Firebase  
-        firebase.initializeApp(firebaseConfig);  
-    </script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>Aplikasi Input Invoice - Firman Grup</title>  
@@ -527,61 +509,52 @@
     let itemCounter = 1;  
     let totalAmount = 0;  
     
-    document.getElementById('saveInvoice').addEventListener('click', function() {  
-        // Validasi data  
-        const clientName = document.getElementById('clientName').value;  
-        const itemList = document.getElementById('itemList');  
+    function addItemToList() {  
+        const itemName = document.getElementById('itemName').value;  
+        const itemQuantity = parseInt(document.getElementById('itemQuantity').value);  
+        const itemPriceStr = document.getElementById('itemPrice').value;  
+        const itemPrice = unformatNumber(itemPriceStr);  
         
-        if (!clientName) {  
-            alert('Silakan isi nama klien terlebih dahulu!');  
-            return;  
+        if (itemName && !isNaN(itemQuantity) && !isNaN(itemPrice) && itemQuantity > 0 && itemPrice >= 0) {  
+            const subtotal = itemQuantity * itemPrice;  
+            const tableRow = document.createElement('tr');  
+            tableRow.dataset.name = itemName;  
+            tableRow.dataset.quantity = itemQuantity;  
+            tableRow.dataset.price = itemPrice;  
+            
+            tableRow.innerHTML = `  
+                <td>${itemCounter}</td>  
+                <td>${itemName}</td>  
+                <td>${itemQuantity}</td>  
+                <td class="right">${formatNumber(itemPrice)}</td>  
+                <td class="right">${formatNumber(subtotal)}</td>  
+                <td class="no-print">  
+                    <button type="button" class="editBtn">Edit</button>  
+                    <button type="button" class="deleteBtn">Hapus</button>  
+                </td>  
+            `;  
+            
+            document.getElementById('itemList').appendChild(tableRow);  
+            
+            // Reset form item  
+            document.getElementById('itemName').value = '';  
+            document.getElementById('itemQuantity').value = '';  
+            document.getElementById('itemPrice').value = '';  
+            
+            // Update counter dan total  
+            itemCounter++;  
+            totalAmount += subtotal;  
+            document.getElementById('totalAmount').textContent = formatNumber(totalAmount);  
+            
+            // Tambahkan event listener untuk tombol  
+            addButtonListeners(tableRow);  
+            
+            return true;  
+        } else {  
+            alert('Silakan isi semua data item dengan benar!');  
+            return false;  
         }  
-        
-        if (itemList.rows.length === 0) {  
-            alert('Silakan tambahkan minimal satu item terlebih dahulu!');  
-            return;  
-        }  
-        
-        // Simpan ke Firebase  
-        var database = firebase.database();  
-        var invoicesRef = database.ref('invoices');  
-        
-        // Siapkan data invoice  
-        var invoiceData = {  
-            invoiceNumber: document.getElementById('invoiceNumber').value,  
-            invoiceDate: document.getElementById('invoiceDate').value,  
-            companyName: document.getElementById('companyName').value,  
-            companyAddress: document.getElementById('companyAddress').value,  
-            companyPhone: document.getElementById('companyPhone').value,  
-            clientName: document.getElementById('clientName').value,  
-            clientAddress: document.getElementById('clientAddress').value,  
-            clientPhone: document.getElementById('clientPhone').value,  
-            currency: document.getElementById('currency').value,  
-            totalAmount: document.getElementById('totalAmount').textContent,  
-            notes: document.getElementById('notes').value,  
-            items: []  
-        };  
-        
-        // Tambahkan item ke invoice  
-        var rows = itemList.rows;  
-        for (var i = 0; i < rows.length; i++) {  
-            invoiceData.items.push({  
-                name: rows[i].dataset.name,  
-                quantity: rows[i].dataset.quantity,  
-                price: rows[i].dataset.price,  
-                subtotal: unformatNumber(rows[i].cells[4].textContent)  
-            });  
-        }  
-        
-        // Simpan ke Firebase  
-        invoicesRef.push(invoiceData)  
-            .then(() => {  
-                alert('Invoice berhasil disimpan ke Firebase!');  
-            })  
-            .catch((error) => {  
-                alert('Gagal menyimpan invoice: ' + error);  
-            });  
-    });
+    }  
     
     function addButtonListeners(tableRow) {  
         // Event listener untuk tombol hapus  
@@ -641,14 +614,6 @@
     // Event listener untuk tombol tambah item  
     document.getElementById('addItem').addEventListener('click', function() {  
         addItemToList();  
-    });  
-    function lihatInvoice() {  
-    var invoicesRef = firebase.database().ref('invoices');  
-    
-    invoicesRef.on('value', (snapshot) => {  
-        var data = snapshot.val();  
-        console.log('Daftar Invoice:', data);  
-        // Di sini Anda bisa menambahkan logika untuk menampilkan daftar invoice  
     });  
     
     // Event listener untuk tombol update item  
