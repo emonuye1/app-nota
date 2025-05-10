@@ -228,7 +228,23 @@
         function tambahTamu() {  
             const namaTamu = document.getElementById('nama-tamu').value.trim();  
             const lokasiTamu = document.getElementById('lokasi-tamu').value.trim();  
-            const statusTamu = document.getElementById('status-tamu').value;  
+            const statusTamu = document.getElementById('status-tamu').value; 
+            const user = auth.currentUser;  
+            if (user) {  
+                // Simpan ke Firebase secara otomatis  
+                const undanganRef = database.ref('undangan_firman_resti/daftar_tamu/' + user.uid);  
+                undanganRef.set(daftarTamu)  
+                    .then(() => {  
+                        console.log('Daftar tamu berhasil disimpan otomatis');  
+                    })  
+                    .catch((error) => {  
+                        Swal.fire({  
+                            icon: 'error',  
+                            title: 'Gagal Menyimpan Otomatis',  
+                            text: error.message  
+                        });  
+                    });  
+            }  
 
             // Validasi input  
             if (!namaTamu || !lokasiTamu) {  
